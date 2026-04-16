@@ -40,15 +40,17 @@ CommandLineArgsForDesignTimeEvaluation=-langversion:9.0 -define:UNITY_6000_3_6;U
 /warnaserror+:NU1605
 
 [sourceFiles]
-Assets/Script/
- CameraSwitch.cs
- CoolingController.cs
- IntegrityController.cs
- NodeManager.cs
- PressureController.cs
- ReactorNodeScript.cs
- SystemManager.cs
-Assets/TutorialInfo/Scripts/Readme.cs
+Assets/
+ Sci-Fi UI/Demo_Assets/scripts/GUI_Demo.cs
+ Script/
+  CameraSwitch.cs
+  CoolingController.cs
+  IntegrityController.cs
+  NodeManager.cs
+  PressureController.cs
+  ReactorNodeScript.cs
+  SystemManager.cs
+ TutorialInfo/Scripts/Readme.cs
 Temp/obj/Assembly-CSharp/.NETStandard,Version=v2.1.AssemblyAttributes.cs
 
 [metadataReferences]
