@@ -6,6 +6,7 @@ public class CameraSwitch : MonoBehaviour
     [SerializeField] private Transform[] cameraPoints;
     [SerializeField] private float moveSpeed = 5f;
     [SerializeField] private float rotateSpeed = 5f;
+    [SerializeField] private NodeManager nodeManager;
 
     private int currentIndex = 0;
     private Transform targetPoint;
@@ -31,6 +32,7 @@ public class CameraSwitch : MonoBehaviour
         {
             currentIndex = (currentIndex + 1) % cameraPoints.Length;
             targetPoint = cameraPoints[currentIndex];
+            nodeManager.SetNode((NodeType)currentIndex);
         }
 
         if (Keyboard.current.leftArrowKey.wasPressedThisFrame)
@@ -40,6 +42,7 @@ public class CameraSwitch : MonoBehaviour
                 currentIndex = cameraPoints.Length - 1;
 
             targetPoint = cameraPoints[currentIndex];
+            nodeManager.SetNode((NodeType)currentIndex);
         }
     }
 
