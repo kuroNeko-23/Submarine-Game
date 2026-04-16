@@ -36,7 +36,7 @@ public class SystemManager : MonoBehaviour
 
     public float passivePowerDrain = 5f;
     public float passivePressureIncrease = 2f;
-    public float passiveCooling = 1f;
+    public float heatLossInDepth = 5f; // passive cooling (deep sea effect)
 
     [Title("REACTOR")]
 
@@ -48,9 +48,6 @@ public class SystemManager : MonoBehaviour
 
     public float minSafeHeat = 20f;
     public float maxSafeHeat = 80f;
-
-    public float heatLossInDepth = 5f; // passive cooling (deep sea effect)
-
     public float heatingRate = 25f;
     public float coolingRate = 30f;
 

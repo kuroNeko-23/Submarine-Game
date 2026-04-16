@@ -128,6 +128,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 94462947}
+  - component: {fileID: 94462948}
   m_Layer: 0
   m_Name: Cam_Node_Pressure
   m_TagString: MainCamera
@@ -150,6 +151,21 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1384810841}
   m_LocalEulerAnglesHint: {x: 0, y: -90, z: 0}
+--- !u!114 &94462948
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 94462946}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b34e03028a28e034fb2ff2d730b7d4ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PressureNode
+  systemManager: {fileID: 1975932470}
+  nodeManager: {fileID: 1384810842}
+  activationKey: 19
 --- !u!1 &193543458
 GameObject:
   m_ObjectHideFlags: 0
@@ -5143,6 +5159,7 @@ MonoBehaviour:
   - {fileID: 94462947}
   moveSpeed: 5
   rotateSpeed: 5
+  nodeManager: {fileID: 1384810842}
 --- !u!1 &346388296
 GameObject:
   m_ObjectHideFlags: 0
@@ -5152,6 +5169,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 346388297}
+  - component: {fileID: 346388298}
   m_Layer: 0
   m_Name: Cam_Node_ControlPanel
   m_TagString: MainCamera
@@ -5174,6 +5192,21 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1384810841}
   m_LocalEulerAnglesHint: {x: 3, y: 0, z: 0}
+--- !u!114 &346388298
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 346388296}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: acd80b406f575764da7ffa0acfc577b6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ControlPanelNode
+  systemManager: {fileID: 1975932470}
+  nodeManager: {fileID: 1384810842}
+  repairKey: 32
 --- !u!1 &407576971
 GameObject:
   m_ObjectHideFlags: 0
@@ -5808,6 +5841,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1384810841}
+  - component: {fileID: 1384810842}
   m_Layer: 0
   m_Name: Camera Nodes
   m_TagString: Untagged
@@ -5834,6 +5868,19 @@ Transform:
   - {fileID: 94462947}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1384810842
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1384810840}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9db8355ababe3344ebcbb991c542c68a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NodeManager
+  currentNode: 0
 --- !u!1 &1430681319
 GameObject:
   m_ObjectHideFlags: 0
@@ -10933,6 +10980,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1605014841}
+  - component: {fileID: 1605014842}
   m_Layer: 0
   m_Name: Cam_Node_CoolingVent
   m_TagString: MainCamera
@@ -10955,6 +11003,22 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1384810841}
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
+--- !u!114 &1605014842
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1605014840}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6f3640caf44e79d4abcfcdbdc2365501, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CoolingController
+  systemManager: {fileID: 1975932470}
+  nodeManager: {fileID: 1384810842}
+  coolKey: 17
+  heatKey: 36
 --- !u!1 &1929429314
 GameObject:
   m_ObjectHideFlags: 0
@@ -10964,6 +11028,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1929429315}
+  - component: {fileID: 1929429316}
   m_Layer: 0
   m_Name: Cam_Node_Reactor
   m_TagString: MainCamera
@@ -10986,6 +11051,21 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1384810841}
   m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
+--- !u!114 &1929429316
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1929429314}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8a59912d70d09a469c384345c9eae8c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ReactorController
+  systemManager: {fileID: 1975932470}
+  nodeManager: {fileID: 1384810842}
+  activationKey: 37
 --- !u!1 &1932501534
 GameObject:
   m_ObjectHideFlags: 0
@@ -15831,8 +15911,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1975932469}
+  - component: {fileID: 1975932470}
   m_Layer: 0
-  m_Name: Player Systems
+  m_Name: System Manager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -15853,6 +15934,44 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1975932470
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1975932467}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f54206135ba64244a8fa49efb5083d90, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SystemManager
+  pressure: 20
+  power: 50
+  heat: 20
+  integrity: 100
+  isLocked: 0
+  passivePowerDrain: 0.8
+  passivePressureIncrease: 0.5
+  heatLossInDepth: 0.7
+  powerGenerateRate: 15
+  heatFromPower: 0.4
+  pressureFromPower: 0.15
+  minSafeHeat: 20
+  maxSafeHeat: 80
+  heatingRate: 18
+  coolingRate: 20
+  heatingPowerCost: 4
+  coolingPowerCost: 5
+  underheatThreshold: 20
+  overheatThreshold: 80
+  depressurizeRate: 18
+  pressurePowerCost: 5
+  spikeDrainRate: 1.5
+  failureDrainRate: 5
+  resolveDuration: 2.5
+  resolveHeatReduction: 20
+  resolvePressureReduction: 20
 --- !u!1001 &2046498521
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -15998,9 +16117,9 @@ PrefabInstance:
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
-  - {fileID: 1975932469}
   - {fileID: 330585546}
   - {fileID: 1384810841}
+  - {fileID: 1975932469}
   - {fileID: 410087041}
   - {fileID: 832575519}
   - {fileID: 2046498521}
