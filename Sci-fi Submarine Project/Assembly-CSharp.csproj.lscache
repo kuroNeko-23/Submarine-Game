@@ -44,12 +44,14 @@ Assets/
  Sci-Fi UI/Demo_Assets/scripts/GUI_Demo.cs
  Script/
   CameraSwitch.cs
+  ControlPanelUI.cs
   CoolingController.cs
   IntegrityController.cs
   NodeManager.cs
   PressureController.cs
   ReactorNodeScript.cs
   SystemManager.cs
+  SystemSliderUI.cs
  TutorialInfo/Scripts/Readme.cs
 Temp/obj/Assembly-CSharp/.NETStandard,Version=v2.1.AssemblyAttributes.cs
 
@@ -330,6 +332,7 @@ Library/PackageCache/com.unity.collections@aea9d3bd5e19/
 Library/PackageCache/
  com.unity.ext.nunit@d8c07649098d/net40/unity-custom/nunit.framework.dll
  com.unity.nuget.mono-cecil@ecb9724e46ff/Mono.Cecil.dll
+ com.unity.nuget.newtonsoft-json@4dfd81071c64/Runtime/Newtonsoft.Json.dll
  com.unity.visualscripting@191c0d7e3b69/Runtime/VisualScripting.Flow/Dependencies/NCalc/Unity.VisualScripting.Antlr3.Runtime.dll
 Library/ScriptAssemblies/
  PPv2URPConverters.dll
@@ -341,6 +344,7 @@ Library/ScriptAssemblies/
  Unity.Burst.Editor.dll
  Unity.Collections.dll
  Unity.Collections.Editor.dll
+ Unity.EditorCoroutines.Editor.dll
  Unity.InputSystem.dll
  Unity.InputSystem.ForUI.dll
  Unity.InternalAPIEngineBridge.004.dll
@@ -384,7 +388,10 @@ Library/ScriptAssemblies/
  UnityEditor.UI.Analytics.dll
  UnityEditor.UI.dll
  UnityEngine.UI.dll
-Temp/bin/Debug/Sirenix.OdinInspector.Modules.UnityMathematics.dll
+Temp/bin/Debug/
+ Sirenix.OdinInspector.Modules.UnityMathematics.dll
+ VoxelLabs.UltimateThumbnails.Lib.dll
+ VoxelLabs.UltimateThumbnails.UIElements.dll
 
 [analyzerReferences]
 ../../../../Program Files/Unity/Hub/Editor/6000.3.6f1/Editor/Data/Tools/BuildPipeline/Unity.SourceGenerators/

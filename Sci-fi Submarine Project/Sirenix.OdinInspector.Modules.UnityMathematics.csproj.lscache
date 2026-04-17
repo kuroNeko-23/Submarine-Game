@@ -334,6 +334,7 @@ Assets/Plugins/Sirenix/Assemblies/
  Sirenix.Serialization.dll
  Sirenix.Utilities.dll
  Sirenix.Utilities.Editor.dll
+Assets/Voxel Labs/Ultimate Thumbnails/Editor/Scripts/Assembly/VoxelLabs.UltimateThumbnails.Core.dll
 Library/PackageCache/com.unity.collab-proxy@1ec4e416a4af/Lib/Editor/
  log4netPlastic.dll
  Unity.Plastic.Antlr3.Runtime.dll
@@ -347,6 +348,7 @@ Library/PackageCache/com.unity.collections@aea9d3bd5e19/
 Library/PackageCache/
  com.unity.ext.nunit@d8c07649098d/net40/unity-custom/nunit.framework.dll
  com.unity.nuget.mono-cecil@ecb9724e46ff/Mono.Cecil.dll
+ com.unity.nuget.newtonsoft-json@4dfd81071c64/Runtime/Newtonsoft.Json.dll
  com.unity.visualscripting@191c0d7e3b69/Editor/VisualScripting.Core/Dependencies/
   DotNetZip/Unity.VisualScripting.IonicZip.dll
   YamlDotNet/Unity.VisualScripting.YamlDotNet.dll
