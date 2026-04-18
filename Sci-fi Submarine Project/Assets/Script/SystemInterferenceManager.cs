@@ -86,4 +86,14 @@ public class SystemInterferenceManager : MonoBehaviour
         heatErrorUI.SetActive(false);
         pressureErrorUI.SetActive(false);
     }
+    // ADD THIS FUNCTION
+    public void ResolveMalfunction()
+    {
+        if (currentMalfunction == SystemType.None)
+            return;
+
+        Debug.Log($"✅ {currentMalfunction} system repaired!");
+
+        ResetAll(); // this already hides all error UI
+    }
 }
