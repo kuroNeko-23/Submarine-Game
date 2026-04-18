@@ -53,7 +53,7 @@ TemporaryDependencyNodeTargetIdentifier=netstandard2.1
 
 [sourceFiles]
 Assets/
- Sci-Fi UI/Demo_Assets/scripts/GUI_Demo.cs
+ Other Packages/Sci-Fi UI/Demo_Assets/scripts/GUI_Demo.cs
  Script/
   CameraSwitch.cs
   ControlPanelSwitcher.cs
@@ -63,6 +63,7 @@ Assets/
   NodeManager.cs
   PressureController.cs
   ReactorNodeScript.cs
+  SystemInterferenceManager.cs
   SystemManager.cs
   SystemSliderUI.cs
  TutorialInfo/Scripts/Readme.cs
@@ -414,6 +415,7 @@ Temp/bin/Debug/
  Unity.SourceGenerators.dll
  Unity.UIToolkit.SourceGenerator.dll
 ../../../../Users/minza/.vscode/extensions/visualstudiotoolsforunity.vstuc-1.2.1/Analyzers/Microsoft.Unity.Analyzers.dll
+Assets/Other Packages/Voxel Labs/Ultimate Thumbnails/Editor/Scripts/Assembly/VoxelLabs.UltimateThumbnails.Core.dll
 
 [analyzerConfigFiles]
 Temp/obj/Assembly-CSharp/Assembly-CSharp.GeneratedMSBuildEditorConfig.editorconfig

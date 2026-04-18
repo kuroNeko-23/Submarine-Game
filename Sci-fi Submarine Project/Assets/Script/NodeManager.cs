@@ -4,7 +4,9 @@ public enum NodeType
 {
     ControlPanel,
     Cooling,
+    Reactor_Pipes,
     Reactor,
+    Electricity,
     Pressure
 }
 

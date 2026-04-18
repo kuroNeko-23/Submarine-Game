@@ -52,7 +52,7 @@ TemporaryDependencyNodeTargetIdentifier=netstandard2.1
 /warnaserror+:NU1605
 
 [sourceFiles]
-Assets/Voxel Labs/Ultimate Thumbnails/Editor/Scripts/UIElements/ToolbarBottom.cs
+Assets/Other Packages/Voxel Labs/Ultimate Thumbnails/Editor/Scripts/UIElements/ToolbarBottom.cs
 Temp/obj/VoxelLabs.UltimateThumbnails.UIElements/.NETStandard,Version=v2.1.AssemblyAttributes.cs
 
 [metadataReferences]
@@ -326,15 +326,16 @@ Temp/obj/VoxelLabs.UltimateThumbnails.UIElements/.NETStandard,Version=v2.1.Assem
  System.Transactions.dll
  System.Xml.dll
  System.Xml.Linq.dll
-Assets/Plugins/Sirenix/Assemblies/
- Sirenix.OdinInspector.Attributes.dll
- Sirenix.OdinInspector.Editor.dll
- Sirenix.Reflection.Editor.dll
- Sirenix.Serialization.Config.dll
- Sirenix.Serialization.dll
- Sirenix.Utilities.dll
- Sirenix.Utilities.Editor.dll
-Assets/Voxel Labs/Ultimate Thumbnails/Editor/Scripts/Assembly/VoxelLabs.UltimateThumbnails.Core.dll
+Assets/
+ Other Packages/Voxel Labs/Ultimate Thumbnails/Editor/Scripts/Assembly/VoxelLabs.UltimateThumbnails.Core.dll
+ Plugins/Sirenix/Assemblies/
+  Sirenix.OdinInspector.Attributes.dll
+  Sirenix.OdinInspector.Editor.dll
+  Sirenix.Reflection.Editor.dll
+  Sirenix.Serialization.Config.dll
+  Sirenix.Serialization.dll
+  Sirenix.Utilities.dll
+  Sirenix.Utilities.Editor.dll
 Library/PackageCache/com.unity.collab-proxy@1ec4e416a4af/Lib/Editor/
  log4netPlastic.dll
  Unity.Plastic.Antlr3.Runtime.dll
@@ -368,6 +369,7 @@ Temp/bin/Debug/VoxelLabs.UltimateThumbnails.Lib.dll
  Unity.SourceGenerators.dll
  Unity.UIToolkit.SourceGenerator.dll
 ../../../../Users/minza/.vscode/extensions/visualstudiotoolsforunity.vstuc-1.2.1/Analyzers/Microsoft.Unity.Analyzers.dll
+Assets/Other Packages/Voxel Labs/Ultimate Thumbnails/Editor/Scripts/Assembly/VoxelLabs.UltimateThumbnails.Core.dll
 
 [analyzerConfigFiles]
 Temp/obj/VoxelLabs.UltimateThumbnails.UIElements/VoxelLabs.UltimateThumbnails.UIElements.GeneratedMSBuildEditorConfig.editorconfig

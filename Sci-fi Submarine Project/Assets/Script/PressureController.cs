@@ -6,8 +6,11 @@ public class PressureNode : MonoBehaviour
     [SerializeField] private SystemManager systemManager;
     [SerializeField] private NodeManager nodeManager;
 
-    [Header("Settings")]
+    [Header("Keyboard Settings")]
     [SerializeField] private Key activationKey = Key.E;
+
+    // UI Hold State
+    private bool isDepressurizingHeld = false;
 
     void Update()
     {
@@ -15,14 +18,42 @@ public class PressureNode : MonoBehaviour
         if (nodeManager.currentNode != NodeType.Pressure)
             return;
 
-        HandleInput();
+        HandleKeyboardInput();
+        HandleUIInput();
     }
 
-    private void HandleInput()
+    // =========================
+    // KEYBOARD INPUT (UNCHANGED)
+    // =========================
+    private void HandleKeyboardInput()
     {
         if (Keyboard.current[activationKey].isPressed)
         {
             systemManager.ReducePressure(Time.deltaTime);
         }
+    }
+
+    // =========================
+    // UI INPUT (NEW)
+    // =========================
+    private void HandleUIInput()
+    {
+        if (isDepressurizingHeld)
+        {
+            systemManager.ReducePressure(Time.deltaTime);
+        }
+    }
+
+    // =========================
+    // BUTTON EVENTS (FOR UI)
+    // =========================
+    public void StartDepressurizing()
+    {
+        isDepressurizingHeld = true;
+    }
+
+    public void StopDepressurizing()
+    {
+        isDepressurizingHeld = false;
     }
 }
