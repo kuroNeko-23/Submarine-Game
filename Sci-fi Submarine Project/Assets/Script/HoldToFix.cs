@@ -4,8 +4,13 @@ using UnityEngine.EventSystems;
 
 public class HoldToFix : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IPointerExitHandler
 {
-    [Header("System Interference Manager")]
+    [Header("Managers")]
     [SerializeField] private SystemInterferenceManager interferenceManager;
+    [SerializeField] private LeakMalfunctionManager leakManager;
+
+    [Header("Leak Fix Type (ONLY for leak panels)")]
+    [SerializeField] private LeakMalfunctionManager.LeakType fixType;
+
     [Header("UI")]
     [SerializeField] private Image progressCircle;
 
@@ -51,12 +56,23 @@ public class HoldToFix : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
         holdTimer = 0f;
         progressCircle.fillAmount = 0f;
 
-        Debug.Log("Electricity Fixed!");
+        // =========================
+        // FIX LOGIC
+        // =========================
 
-        // 🔥 ACTUAL FIX
+        // 1. Try fixing leak first (if assigned)
+        if (leakManager != null && fixType != LeakMalfunctionManager.LeakType.None)
+        {
+            leakManager.ResolveLeak(fixType);
+            Debug.Log($"🔧 Leak Fixed: {fixType}");
+            return;
+        }
+
+        // 2. Otherwise fix electricity/system interference
         if (interferenceManager != null)
         {
             interferenceManager.ResolveMalfunction();
+            Debug.Log("🔧 Electricity/System Fixed");
         }
     }
 

@@ -7,6 +7,7 @@ public class ControlPanelSwitcher : MonoBehaviour
     [SerializeField] private GameObject hullPanel;
     [SerializeField] private GameObject powerPanel;
 
+
     void Start()
     {
         ShowSystem(); // default panel
@@ -14,18 +15,21 @@ public class ControlPanelSwitcher : MonoBehaviour
 
     public void ShowSystem()
     {
+        PlayClick();
         HideAll();
         systemPanel.SetActive(true);
     }
 
     public void ShowHull()
     {
+        PlayClick();
         HideAll();
         hullPanel.SetActive(true);
     }
 
     public void ShowPower()
     {
+        PlayClick();
         HideAll();
         powerPanel.SetActive(true);
     }
@@ -35,5 +39,10 @@ public class ControlPanelSwitcher : MonoBehaviour
         systemPanel.SetActive(false);
         hullPanel.SetActive(false);
         powerPanel.SetActive(false);
+    }
+    private void PlayClick()
+    {
+        if (AudioManager.Instance != null)
+            AudioManager.Instance.PlayMainPanelUIButton();
     }
 }

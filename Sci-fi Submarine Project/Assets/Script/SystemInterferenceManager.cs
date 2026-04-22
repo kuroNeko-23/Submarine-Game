@@ -21,6 +21,9 @@ public class SystemInterferenceManager : MonoBehaviour
     [SerializeField] private GameObject heatErrorUI;
     [SerializeField] private GameObject pressureErrorUI;
 
+    [Header("Electricity VFX")]
+    [SerializeField] private ParticleSystem electricityVFX;
+
     [Header("State")]
     [ReadOnly] public SystemType currentMalfunction = SystemType.None;
 
@@ -60,6 +63,17 @@ public class SystemInterferenceManager : MonoBehaviour
 
         currentMalfunction = type;
 
+        // 🔥 VFX
+        if (electricityVFX != null)
+            electricityVFX.Play();
+
+        // 🔊 AUDIO (ADD THIS)
+        if (AudioManager.Instance != null)
+            AudioManager.Instance.PlayElectricity();
+        // 🔊 UI SFX
+        if (AudioManager.Instance != null)
+            AudioManager.Instance.PlayErrorPanelSFX();
+
         switch (type)
         {
             case SystemType.Power:
@@ -85,8 +99,16 @@ public class SystemInterferenceManager : MonoBehaviour
         powerErrorUI.SetActive(false);
         heatErrorUI.SetActive(false);
         pressureErrorUI.SetActive(false);
+
+        // 🔥 VFX
+        if (electricityVFX != null)
+            electricityVFX.Stop();
+
+        // 🔊 AUDIO (ADD THIS)
+        if (AudioManager.Instance != null)
+            AudioManager.Instance.StopElectricity();
     }
-    // ADD THIS FUNCTION
+
     public void ResolveMalfunction()
     {
         if (currentMalfunction == SystemType.None)
@@ -94,6 +116,10 @@ public class SystemInterferenceManager : MonoBehaviour
 
         Debug.Log($"✅ {currentMalfunction} system repaired!");
 
-        ResetAll(); // this already hides all error UI
+        // 🔊 UI SFX
+        if (AudioManager.Instance != null)
+            AudioManager.Instance.PlayErrorPanelSFX();
+
+        ResetAll();
     }
 }
