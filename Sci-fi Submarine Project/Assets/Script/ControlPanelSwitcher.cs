@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class ControlPanelSwitcher : MonoBehaviour
@@ -6,6 +7,7 @@ public class ControlPanelSwitcher : MonoBehaviour
     [SerializeField] private GameObject systemPanel;
     [SerializeField] private GameObject hullPanel;
     [SerializeField] private GameObject powerPanel;
+    [SerializeField] private GameObject depthPanel;
 
 
     void Start()
@@ -33,12 +35,19 @@ public class ControlPanelSwitcher : MonoBehaviour
         HideAll();
         powerPanel.SetActive(true);
     }
+    public void ShowDepth()
+    {
+        PlayClick();
+        HideAll();
+        depthPanel.SetActive(true);
+    }
 
     private void HideAll()
     {
         systemPanel.SetActive(false);
         hullPanel.SetActive(false);
         powerPanel.SetActive(false);
+        depthPanel.SetActive(false);
     }
     private void PlayClick()
     {

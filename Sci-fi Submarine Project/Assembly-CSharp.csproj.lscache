@@ -58,12 +58,14 @@ Assets/
   ControlPanelSwitcher.cs
   ControlPanelUI.cs
   CoolingController.cs
+  DepthSystem.cs
   HoldToFix.cs
   IntegrityController.cs
   MalfunctionManagerScript.cs
   NodeManager.cs
   PressureController.cs
   ReactorNodeScript.cs
+  RulerLoop.cs
   SystemInterferenceManager.cs
   SystemManager.cs
   SystemSliderUI.cs
