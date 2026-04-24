@@ -397,7 +397,10 @@ Library/ScriptAssemblies/
  Unity.RenderPipelines.Universal.Shaders.dll
  Unity.Rider.Editor.dll
  Unity.Searcher.Editor.dll
+ Unity.Settings.Editor.dll
  Unity.ShaderGraph.Editor.dll
+ Unity.Splines.dll
+ Unity.Splines.Editor.dll
  Unity.TextMeshPro.dll
  Unity.TextMeshPro.Editor.dll
  Unity.Timeline.dll

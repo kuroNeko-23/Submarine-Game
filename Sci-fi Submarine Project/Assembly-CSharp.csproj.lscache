@@ -54,17 +54,21 @@ Assets/
  Other Packages/Sci-Fi UI/Demo_Assets/scripts/GUI_Demo.cs
  Script/
   Audio Manager.cs
+  CameraShake.cs
   CameraSwitch.cs
   ControlPanelSwitcher.cs
   ControlPanelUI.cs
   CoolingController.cs
   DepthSystem.cs
+  DistanceFade.cs
   GameStateManager.cs
   HoldToFix.cs
   HoldToFix_Integrity.cs
   IntegrityController.cs
   LightFlicker.cs
   MalfunctionManagerScript.cs
+  MegalodonBrain.cs
+  MegalodonSplineController.cs
   NodeManager.cs
   PressureController.cs
   ReactorNodeScript.cs
@@ -390,7 +394,10 @@ Library/ScriptAssemblies/
  Unity.RenderPipelines.Universal.Shaders.dll
  Unity.Rider.Editor.dll
  Unity.Searcher.Editor.dll
+ Unity.Settings.Editor.dll
  Unity.ShaderGraph.Editor.dll
+ Unity.Splines.dll
+ Unity.Splines.Editor.dll
  Unity.TextMeshPro.dll
  Unity.TextMeshPro.Editor.dll
  Unity.Timeline.dll
