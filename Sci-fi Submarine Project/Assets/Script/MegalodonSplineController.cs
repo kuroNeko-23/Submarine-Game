@@ -2,138 +2,286 @@ using UnityEngine;
 using UnityEngine.Splines;
 using Sirenix.OdinInspector;
 
+public enum SplineType
+{
+    Normal,
+    WindowPass,
+    Attack
+}
+
+[System.Serializable]
+public class SplineData
+{
+    public string id;
+    public SplineContainer spline;
+    public float speed = 0.1f;
+    public SplineType type; // 🔥 IMPORTANT
+}
+
 public class MegalodonSplineController : MonoBehaviour
 {
-    [Header("Spline References")]
-    [SerializeField] private SplineContainer farSpline;
-    [SerializeField] private SplineContainer closeSpline;
+    public enum MovementMode
+    {
+        Loop,
+        OneShot
+    }
 
-    [Header("Movement")]
-    [SerializeField] private float speed = 0.1f;
-    [SerializeField] private bool loop = true;
+    [Header("Spline Library")]
+    [SerializeField] private SplineData[] splines;
 
-    [Header("Transition")]
-    [SerializeField] private float transitionDuration = 2f;
+    [Header("Attack Settings")]
+    [SerializeField] private float attackTriggerT = 0.4f;     
+    [SerializeField] private float exitSpeedMultiplier = 0.3f;
+    [Header("Window Pass Settings")]
+    [SerializeField] private float windowPassTriggerT = 0.3f; // when woosh happens
+    private bool hasTriggeredWindowPass = false;
+
+    [Header("References")]
+    [SerializeField] private Animator animator;
+    [SerializeField] private MegalodonManager manager;
+    [SerializeField] private CameraShake cameraShake;
+    
 
     private SplineContainer currentSpline;
-    private SplineContainer targetSpline;
+    private SplineType currentType = SplineType.Normal;
 
     private float t;
+    private float currentSpeed;
+    private int direction = 1;
 
-    private bool isTransitioning;
-    private float transitionT;
+    private MovementMode mode = MovementMode.Loop;
 
-    private SplineContainer fromSpline;
+    private bool hasTriggeredAttack = false;
+    private bool isExiting = false;
+    private bool hasFinished = false;
 
-    void Start()
-    {
-        SetFarSpline();
-    }
+    // =========================
+    // UPDATE
+    // =========================
 
     void Update()
     {
         if (currentSpline == null) return;
 
-        if (isTransitioning)
+        Move();
+    }
+
+    // =========================
+    // CORE MOVEMENT
+    // =========================
+
+    private void Move()
+    {
+        float speedToUse = currentSpeed;
+
+        // 🔥 Slow exit after attack hit
+        if (mode == MovementMode.OneShot && isExiting)
         {
-            UpdateTransition();
+            speedToUse *= exitSpeedMultiplier;
+        }
+
+        t += speedToUse * direction * Time.deltaTime;
+        // =========================
+        // WINDOW PASS TRIGGER
+        // =========================
+        if (mode == MovementMode.OneShot
+            && currentType == SplineType.WindowPass
+            && !hasTriggeredWindowPass
+            && t >= windowPassTriggerT)
+        {
+            hasTriggeredWindowPass = true;
+            TriggerWindowPassEvent();
+        }
+        
+
+        // =========================
+        // ATTACK TRIGGER ONLY FOR ATTACK TYPE
+        // =========================
+        if (mode == MovementMode.OneShot
+            && currentType == SplineType.Attack
+            && !hasTriggeredAttack
+            && t >= attackTriggerT)
+        {
+            hasTriggeredAttack = true;
+            isExiting = true;
+
+            TriggerAttackEvent();
+        }
+
+        // =========================
+        // LOOP MODE
+        // =========================
+        if (mode == MovementMode.Loop)
+        {
+            if (t > 1f) t -= 1f;
+            else if (t < 0f) t += 1f;
+        }
+
+        // =========================
+        // ONE SHOT END
+        // =========================
+        if (mode == MovementMode.OneShot && t >= 1f && !hasFinished)
+        {
+            hasFinished = true;
+            OnOneShotFinished();
             return;
         }
 
-        MoveAlongSpline();
-    }
-
-    // =========================
-    // NORMAL MOVEMENT
-    // =========================
-
-    private void MoveAlongSpline()
-    {
-        t += speed * Time.deltaTime;
-
-        if (loop)
-            t %= 1f;
-        else
-            t = Mathf.Clamp01(t);
-
-        transform.position = currentSpline.EvaluatePosition(t);
-        transform.rotation = Quaternion.LookRotation(currentSpline.EvaluateTangent(t));
-    }
-
-    // =========================
-    // SMOOTH TRANSITION
-    // =========================
-
-    private void UpdateTransition()
-    {
-        transitionT += Time.deltaTime / transitionDuration;
-
-        float fromT = t;
-        float toT = t;
-
-        Vector3 fromPos = fromSpline.EvaluatePosition(fromT);
-        Vector3 toPos = targetSpline.EvaluatePosition(toT);
-
-        Vector3 pos = Vector3.Lerp(fromPos, toPos, transitionT);
-
-        Vector3 fromDir = fromSpline.EvaluateTangent(fromT);
-        Vector3 toDir = targetSpline.EvaluateTangent(toT);
-
-        Vector3 dir = Vector3.Slerp(fromDir, toDir, transitionT);
+        // =========================
+        // APPLY TRANSFORM
+        // =========================
+        Vector3 pos = currentSpline.EvaluatePosition(t);
+        Vector3 tangent = currentSpline.EvaluateTangent(t) * direction;
 
         transform.position = pos;
-        transform.rotation = Quaternion.LookRotation(dir);
+        transform.rotation = Quaternion.LookRotation(tangent);
+    }
 
-        if (transitionT >= 1f)
+    // =========================
+    // SPLINE LOOKUP
+    // =========================
+
+    private SplineData GetSpline(string id)
+    {
+        foreach (var s in splines)
         {
-            FinishTransition();
+            if (s.id == id)
+                return s;
+        }
+
+        Debug.LogWarning($"Spline not found: {id}");
+        return null;
+    }
+
+    // =========================
+    // LOOP CONTROL
+    // =========================
+
+    public void PlayLoop(string id)
+    {
+        var s = GetSpline(id);
+        if (s == null) return;
+
+        currentSpline = s.spline;
+        currentSpeed = s.speed;
+        currentType = s.type;
+
+        mode = MovementMode.Loop;
+
+        t = FindClosestTOnSpline(currentSpline, transform.position);
+
+        ResetState();
+    }
+
+    // =========================
+    // ONE SHOT (ATTACK / PASS)
+    // =========================
+
+    public void PlayOneShot(string id)
+    {
+        var s = GetSpline(id);
+        if (s == null) return;
+
+        currentSpline = s.spline;
+        currentSpeed = s.speed;
+        currentType = s.type;
+
+        mode = MovementMode.OneShot;
+
+        direction = 1;
+        t = 0f;
+
+        ResetState();
+    }
+
+    private void OnOneShotFinished()
+    {
+        // 🔥 ONLY DESPAWN IF ATTACK
+        if (currentType == SplineType.Attack)
+        {
+            Debug.Log("🦈 Attack Finished");
+
+            if (manager != null)
+                manager.Despawn();
         }
     }
 
-    private void FinishTransition()
+    private void ResetState()
     {
-        isTransitioning = false;
-
-        currentSpline = targetSpline;
-        t = 0f;
+        hasTriggeredAttack = false;
+        hasTriggeredWindowPass = false; // 🔥 NEW
+        isExiting = false;
+        hasFinished = false;
     }
 
     // =========================
-    // PUBLIC CONTROL
+    // DIRECTION CONTROL
     // =========================
 
-    public void SetSpline(SplineContainer spline)
+    public void SetDirectionForward() => direction = 1;
+    public void SetDirectionBackward() => direction = -1;
+    public void ReverseDirection() => direction *= -1;
+
+    public void SetDirection(int dir)
     {
-        currentSpline = spline;
-        t = 0f;
+        direction = Mathf.Sign(dir) >= 0 ? 1 : -1;
     }
 
-    // 🔥 NEW SMOOTH SWITCH
-    public void SwitchSplineSmooth(SplineContainer newSpline)
+    // =========================
+    // ATTACK EVENT
+    // =========================
+
+    private void TriggerAttackEvent()
     {
-        if (newSpline == currentSpline) return;
+        Debug.Log("🦈 ATTACK TRIGGERED");
 
-        fromSpline = currentSpline;
-        targetSpline = newSpline;
+        // 🎬 Animation
+        if (animator != null)
+        {
+            animator.SetTrigger("Attack");
+        }
 
-        // 🔥 FIND NEAREST POINT ON NEW SPLINE
-        t = FindClosestTOnSpline(targetSpline, transform.position);
+        // 🎥 Camera Shake
+        if (cameraShake != null)
+        {
+            cameraShake.Shake();
+        }
 
-        transitionT = 0f;
-        isTransitioning = true;
+        // 🔊 Audio
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayImpactSFX();
+        }
     }
+    /// <summary>
+    /// Window Pass Event - called when passing by the window (not attack)  
+    /// </summary>
+    private void TriggerWindowPassEvent()
+    {
+        Debug.Log("🦈 WINDOW PASS WOOSH");
+
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlaySharkWoosh();
+        }
+    }
+
+    // =========================
+    // UTILITY
+    // =========================
+
     private float FindClosestTOnSpline(SplineContainer spline, Vector3 worldPos)
     {
         float bestT = 0f;
         float bestDist = float.MaxValue;
 
-        int resolution = 50; // higher = more accurate
+        int resolution = 50;
 
         for (int i = 0; i <= resolution; i++)
         {
             float tSample = i / (float)resolution;
-
             Vector3 point = spline.EvaluatePosition(tSample);
+
             float dist = (point - worldPos).sqrMagnitude;
 
             if (dist < bestDist)
@@ -147,38 +295,38 @@ public class MegalodonSplineController : MonoBehaviour
     }
 
     // =========================
-    // DEBUG BUTTONS
+    // DEBUG
     // =========================
 
-    [Button("➡ Set Far Spline")]
-    private void SetFarSpline()
+    [Button("▶ Far Forward")]
+    private void DebugFarForward()
     {
-        SetSpline(farSpline);
-        Debug.Log("Megalodon switched to FAR spline");
+        PlayLoop("Far");
+        SetDirectionForward();
     }
 
-    [Button("⬅ Set Close Spline")]
-    private void SetCloseSpline()
+    [Button("◀ Far Backward")]
+    private void DebugFarBackward()
     {
-        SetSpline(closeSpline);
-        Debug.Log("Megalodon switched to CLOSE spline");
+        PlayLoop("Far");
+        SetDirectionBackward();
     }
 
-    [Button("🌊 Smooth → Far")]
-    private void SmoothFar()
+    [Button("👁 Window Pass")]
+    private void DebugWindowPass()
     {
-        SwitchSplineSmooth(farSpline);
+        PlayOneShot("WindowPass");
     }
 
-    [Button("🌊 Smooth → Close")]
-    private void SmoothClose()
+    [Button("⚡ Attack")]
+    private void DebugAttack()
     {
-        SwitchSplineSmooth(closeSpline);
+        PlayOneShot("Attack");
     }
 
-    [Button("🔄 Reset Progress")]
-    private void ResetSplineProgress()
+    [Button("🔄 Reverse")]
+    private void DebugReverse()
     {
-        t = 0f;
+        ReverseDirection();
     }
 }

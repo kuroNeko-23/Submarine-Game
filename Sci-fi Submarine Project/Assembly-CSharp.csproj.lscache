@@ -68,6 +68,7 @@ Assets/
   LightFlicker.cs
   MalfunctionManagerScript.cs
   MegalodonBrain.cs
+  MegalodonManager.cs
   MegalodonSplineController.cs
   NodeManager.cs
   PressureController.cs

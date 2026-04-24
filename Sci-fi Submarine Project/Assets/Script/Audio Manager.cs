@@ -26,6 +26,9 @@ public class AudioManager : MonoBehaviour
     [SerializeField] private AudioSource mainPanelUIButtonClick;
     [SerializeField] private AudioSource systemPanelUIButtonClick;
     [SerializeField] private AudioSource errorPanelSFX;
+    [Header("Monster Audio Groups")]
+    [SerializeField] private AudioSource impactAudioSources;
+    [SerializeField] private AudioSource sharkWooshSource;
 
      [Header("Master Audio Groups")]
     [SerializeField] private AudioSource[] allGameAudioSources;
@@ -116,6 +119,17 @@ public class AudioManager : MonoBehaviour
     public void PlayErrorPanelSFX()
     {
         PlayOneShot(errorPanelSFX);
+    }
+
+    // =========================
+    // MONSTER AUDIO
+    public void PlayImpactSFX()
+    {
+        PlayOneShot(impactAudioSources);
+    }
+    public void PlaySharkWoosh()
+    {
+        PlayOneShot(sharkWooshSource);
     }
     // =========================
     // GENERIC HELPERS
