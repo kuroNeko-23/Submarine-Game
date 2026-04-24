@@ -368,7 +368,7 @@ Library/ScriptAssemblies/
  Unity.Properties.SourceGenerator.dll
  Unity.SourceGenerators.dll
  Unity.UIToolkit.SourceGenerator.dll
-../../../../Users/minza/.vscode/extensions/visualstudiotoolsforunity.vstuc-1.2.1/Analyzers/Microsoft.Unity.Analyzers.dll
+../../../../Users/minza/.vscode/extensions/visualstudiotoolsforunity.vstuc-1.2.2/Analyzers/Microsoft.Unity.Analyzers.dll
 
 [analyzerConfigFiles]
 Temp/obj/Sirenix.OdinInspector.Modules.UnityMathematics/Sirenix.OdinInspector.Modules.UnityMathematics.GeneratedMSBuildEditorConfig.editorconfig

@@ -72,8 +72,9 @@ public class SystemManager : MonoBehaviour
     public float resolveDuration = 2.5f;
     public float resolveHeatReduction = 30f;
     public float resolvePressureReduction = 30f;
+    [Header("Emergency Lights")]
+    [SerializeField] private LightFlicker emergencyLights;
 
-    private float resolveTimer = 0f;
 
     // =========================
     // DEBUG
@@ -122,7 +123,7 @@ public class SystemManager : MonoBehaviour
 
         isLocked = false;
         isFailing = false;
-        resolveTimer = 0f;
+        // resolveTimer = 0f; // Not needed since it's a local variable
     }
 
     // =========================
@@ -136,6 +137,7 @@ public class SystemManager : MonoBehaviour
         CheckFailureState();
         HandleIntegrity();
 
+        LowPowerAudio(); // 🔥 ADD THIS HERE
         HandleOverloadAudio(); // 🔥 ADD THIS HERE
 
         ClampValues();
@@ -161,6 +163,22 @@ public class SystemManager : MonoBehaviour
 
         power += powerGenerateRate * deltaTime;
         heat += heatFromPower * power * deltaTime;
+    }
+    public void LowPowerAudio()
+    {
+        if (power <= 15f)
+        {
+            if (AudioManager.Instance != null)
+            {
+                AudioManager.Instance.PlayLowPowerAlarm();
+            }
+        }
+        else        {
+            if (AudioManager.Instance != null)
+            {
+                AudioManager.Instance.StopLowPowerAlarm();
+            }       
+        }
     }
 
     // =========================
@@ -262,60 +280,92 @@ public class SystemManager : MonoBehaviour
 }
 
     // =========================
-    // INTEGRITY SYSTEM
+// INTEGRITY SYSTEM
+// =========================
+
+private void CheckFailureState()
+{
+    bool pressureMax = pressure >= 100f;
+    bool heatCritical = IsHeatCritical();
+
+    // Trigger failure ONLY ONCE
+    if (!isLocked && pressureMax && heatCritical)
+    {
+        isLocked = true;
+        isFailing = true;
+
+        Debug.Log("🚨 SYSTEM FAILURE TRIGGERED");
+
+        if (AudioManager.Instance != null)
+            AudioManager.Instance.PlaySystemFailureAlarm();
+
+        // 🔴 START LIGHT FLICKER
+        if (emergencyLights != null)
+            emergencyLights.StartFlicker();
+    }
+}
+
+private void HandleIntegrity()
+{
+    bool pressureSpike = pressure >= 100f;
+    bool heatCritical = IsHeatCritical();
+
+    // 🔴 HARD FAILURE (locked state)
+    if (isFailing)
+    {
+        integrity -= failureDrainRate * Time.deltaTime;
+        return;
+    }
+
+    // 🟠 SOFT DAMAGE (unstable but not full failure)
+    if (pressureSpike || heatCritical)
+    {
+        integrity -= spikeDrainRate * Time.deltaTime;
+    }
+}
+
+// 🔥 NEW: INSTANT RESOLVE (NO TIMER)
+public void ResolveFailure()
+{
+    if (!isLocked) return;
+
+    isLocked = false;
+    isFailing = false;
+
+    // =========================
+    // PRESSURE FIX (same)
+    // =========================
+    pressure = Mathf.Clamp(pressure - resolvePressureReduction, 0f, 100f);
+
+    // =========================
+    // HEAT FIX (SMART BALANCE)
     // =========================
 
-    private void CheckFailureState()
+    if (heat >= overheatThreshold)
     {
-        bool pressureMax = pressure >= 100f;
-        bool heatCritical = IsHeatCritical();
-
-        if (pressureMax && heatCritical)
-        {
-            isLocked = true;
-            isFailing = true;
-        }
+        // 🔥 Overheat → bring down into safe zone
+        heat = maxSafeHeat;
+    }
+    else if (heat <= underheatThreshold)
+    {
+        // ❄️ Underheat → bring up into safe zone
+        heat = minSafeHeat;
+    }
+    else
+    {
+        // Already stable → do nothing
     }
 
-    private void HandleIntegrity()
+    Debug.Log("✅ SYSTEM RECOVERED (Heat Balanced)");
+
+    if (AudioManager.Instance != null)
     {
-        bool pressureSpike = pressure >= 100f;
-        bool heatCritical = IsHeatCritical();
-
-        if (isFailing)
-        {
-            integrity -= failureDrainRate * Time.deltaTime;
-            return;
-        }
-
-        if (pressureSpike || heatCritical)
-        {
-            integrity -= spikeDrainRate * Time.deltaTime;
-        }
+        AudioManager.Instance.StopSystemFailureAlarm();
     }
+    if (emergencyLights != null)
+            emergencyLights.StopFlicker();
 
-    public void ResolveFailure(float deltaTime)
-    {
-        if (!isLocked || power <= 0f) return;
-
-        resolveTimer += deltaTime;
-
-        if (resolveTimer >= resolveDuration)
-        {
-            resolveTimer = 0f;
-
-            isLocked = false;
-            isFailing = false;
-
-            heat -= resolveHeatReduction;
-            pressure -= resolvePressureReduction;
-        }
-    }
-
-    public void ResetResolveProgress()
-    {
-        resolveTimer = 0f;
-    }
+}
 
     // =========================
     // CLAMP

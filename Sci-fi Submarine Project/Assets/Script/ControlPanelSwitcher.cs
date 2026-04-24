@@ -6,7 +6,7 @@ public class ControlPanelSwitcher : MonoBehaviour
     [Header("Panels")]
     [SerializeField] private GameObject systemPanel;
     [SerializeField] private GameObject hullPanel;
-    [SerializeField] private GameObject powerPanel;
+    //[SerializeField] private GameObject powerPanel;
     [SerializeField] private GameObject depthPanel;
 
 
@@ -33,7 +33,7 @@ public class ControlPanelSwitcher : MonoBehaviour
     {
         PlayClick();
         HideAll();
-        powerPanel.SetActive(true);
+        //powerPanel.SetActive(true);
     }
     public void ShowDepth()
     {
@@ -46,7 +46,7 @@ public class ControlPanelSwitcher : MonoBehaviour
     {
         systemPanel.SetActive(false);
         hullPanel.SetActive(false);
-        powerPanel.SetActive(false);
+        //[SerializeField] private GameObject powerPanel;
         depthPanel.SetActive(false);
     }
     private void PlayClick()

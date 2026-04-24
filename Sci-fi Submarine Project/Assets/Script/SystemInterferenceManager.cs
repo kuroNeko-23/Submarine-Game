@@ -23,6 +23,8 @@ public class SystemInterferenceManager : MonoBehaviour
 
     [Header("Electricity VFX")]
     [SerializeField] private ParticleSystem electricityVFX;
+    [Header("Hold To Fix Text")]
+    [SerializeField] private GameObject electricityHoldToFixText;
 
     [Header("State")]
     [ReadOnly] public SystemType currentMalfunction = SystemType.None;
@@ -56,7 +58,10 @@ public class SystemInterferenceManager : MonoBehaviour
     // =========================
     // CORE LOGIC
     // =========================
-
+    void Awake()
+    {
+        electricityHoldToFixText.SetActive(false);
+    }
     public void TriggerMalfunction(SystemType type)
     {
         ResetAll();
@@ -66,7 +71,8 @@ public class SystemInterferenceManager : MonoBehaviour
         // 🔥 VFX
         if (electricityVFX != null)
             electricityVFX.Play();
-
+        if(electricityHoldToFixText != null)
+            electricityHoldToFixText.SetActive(true);
         // 🔊 AUDIO (ADD THIS)
         if (AudioManager.Instance != null)
             AudioManager.Instance.PlayElectricity();
@@ -104,6 +110,9 @@ public class SystemInterferenceManager : MonoBehaviour
         if (electricityVFX != null)
             electricityVFX.Stop();
 
+        if(electricityHoldToFixText != null)
+            electricityHoldToFixText.SetActive(false);
+
         // 🔊 AUDIO (ADD THIS)
         if (AudioManager.Instance != null)
             AudioManager.Instance.StopElectricity();
@@ -115,7 +124,8 @@ public class SystemInterferenceManager : MonoBehaviour
             return;
 
         Debug.Log($"✅ {currentMalfunction} system repaired!");
-
+        if(electricityHoldToFixText != null)
+            electricityHoldToFixText.SetActive(false);
         // 🔊 UI SFX
         if (AudioManager.Instance != null)
             AudioManager.Instance.PlayErrorPanelSFX();

@@ -23,6 +23,11 @@ public class LeakMalfunctionManager : MonoBehaviour
     [SerializeField] private GameObject pressureLeakVFX;
     [SerializeField] private GameObject heatPipeLeakVFX;
 
+    [Header("Hold To Fix Text")]
+    [SerializeField] private GameObject reactorHoldToFixText;
+    [SerializeField] private GameObject pressureHoldToFixText;
+    [SerializeField] private GameObject heatPipeHoldToFixText;
+
     // =========================
     // TUNING
     // =========================
@@ -40,11 +45,18 @@ public class LeakMalfunctionManager : MonoBehaviour
     // =========================
     // INIT
     // =========================
+    void Awake()
+    {
+        reactorHoldToFixText.SetActive(false);
+        pressureHoldToFixText.SetActive(false);
+        heatPipeHoldToFixText.SetActive(false);
+    }
 
     void Start()
     {
         ResetAllVFX();
     }
+    
 
     void Update()
     {
@@ -104,6 +116,7 @@ public class LeakMalfunctionManager : MonoBehaviour
         {
             activeLeaks.Add(type);
             EnableLeakVFX(type);
+            EnableHoldToFixText(type);
 
             // 🔊 AUDIO (ADD THIS)
             PlayLeakAudio(type);
@@ -126,7 +139,7 @@ public class LeakMalfunctionManager : MonoBehaviour
 
         activeLeaks.Remove(type);
         DisableLeakVFX(type);
-
+        DisableHoldToFixText(type);
         // 🔊 AUDIO (ADD THIS)
         StopLeakAudio(type);
 
@@ -243,6 +256,42 @@ public class LeakMalfunctionManager : MonoBehaviour
         foreach (var leak in new List<LeakType>(activeLeaks))
         {
             ResolveLeak(leak);
+        }
+    }
+
+    // =========================
+    void EnableHoldToFixText(LeakType type)
+    {
+        switch (type)
+        {
+            case LeakType.ReactorLeak:
+                reactorHoldToFixText.SetActive(true);
+                break;
+
+            case LeakType.PressureLeak:
+                pressureHoldToFixText.SetActive(true);
+                break;
+
+            case LeakType.HeatPipeLeak:
+                heatPipeHoldToFixText.SetActive(true);
+                break;
+        }
+    }
+    void DisableHoldToFixText(LeakType type)
+    {
+        switch (type)
+        {
+            case LeakType.ReactorLeak:
+                reactorHoldToFixText.SetActive(false);
+                break;
+
+            case LeakType.PressureLeak:
+                pressureHoldToFixText.SetActive(false);
+                break;
+
+            case LeakType.HeatPipeLeak:
+                heatPipeHoldToFixText.SetActive(false);
+                break;
         }
     }
 }

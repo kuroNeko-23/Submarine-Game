@@ -19,13 +19,13 @@ public class ControlPanelNode : MonoBehaviour
 
         if (Keyboard.current[repairKey].isPressed)
         {
-            systemManager.ResolveFailure(Time.deltaTime);
+            systemManager.ResolveFailure();
         }
         else
         {
             // Reset progress if player releases key
             // (important for “hold to repair” feel)
-            systemManager.ResetResolveProgress();
+            //systemManager.ResetResolveProgress();
         }
     }
     

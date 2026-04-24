@@ -14,7 +14,7 @@ public class HoldToFix : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
     [Header("UI")]
     [SerializeField] private Image progressCircle;
 
-    [Header("Settings")]
+    [Header("Hold Settings")]
     [SerializeField] private float holdDuration = 2f;
 
     private float holdTimer = 0f;
@@ -24,10 +24,19 @@ public class HoldToFix : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
     {
         if (!isHolding) return;
 
+        // ❌ Stop if nothing to fix
+        if (!CanFix())
+        {
+            ResetProgress();
+            return;
+        }
+
         holdTimer += Time.deltaTime;
 
         float progress = holdTimer / holdDuration;
-        progressCircle.fillAmount = progress;
+
+        if (progressCircle != null)
+            progressCircle.fillAmount = progress;
 
         if (holdTimer >= holdDuration)
         {
@@ -37,6 +46,8 @@ public class HoldToFix : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
 
     public void OnPointerDown(PointerEventData eventData)
     {
+        if (!CanFix()) return;
+
         isHolding = true;
     }
 
@@ -54,13 +65,15 @@ public class HoldToFix : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
     {
         isHolding = false;
         holdTimer = 0f;
-        progressCircle.fillAmount = 0f;
+
+        if (progressCircle != null)
+            progressCircle.fillAmount = 0f;
 
         // =========================
         // FIX LOGIC
         // =========================
 
-        // 1. Try fixing leak first (if assigned)
+        // 1. Leak fix
         if (leakManager != null && fixType != LeakMalfunctionManager.LeakType.None)
         {
             leakManager.ResolveLeak(fixType);
@@ -68,7 +81,7 @@ public class HoldToFix : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
             return;
         }
 
-        // 2. Otherwise fix electricity/system interference
+        // 2. System interference (electricity)
         if (interferenceManager != null)
         {
             interferenceManager.ResolveMalfunction();
@@ -80,6 +93,28 @@ public class HoldToFix : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
     {
         isHolding = false;
         holdTimer = 0f;
-        progressCircle.fillAmount = 0f;
+
+        if (progressCircle != null)
+            progressCircle.fillAmount = 0f;
+    }
+
+    // =========================
+    // VALIDATION
+    // =========================
+    private bool CanFix()
+    {
+        // Leak fix
+        if (leakManager != null && fixType != LeakMalfunctionManager.LeakType.None)
+        {
+            return leakManager.activeLeaks.Contains(fixType);
+        }
+
+        // Electricity fix
+        if (interferenceManager != null)
+        {
+            return interferenceManager.currentMalfunction != SystemInterferenceManager.SystemType.None;
+        }
+
+        return false;
     }
 }
