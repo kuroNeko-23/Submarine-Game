@@ -29,9 +29,10 @@ public class GameStateManager : MonoBehaviour
 
     [Header("UI Fade Settings")]
     [SerializeField] private float fadeDuration = 1.5f;
-    [Header("Auto Restart")]
-    [SerializeField] private float autoRestartDelay = 5f;
+
+    [Header("Scenes")]
     [SerializeField] private string gameplaySceneName;
+    [SerializeField] private string mainMenuSceneName;
 
     private GameState currentState;
     private bool hasEnded = false;
@@ -47,9 +48,8 @@ public class GameStateManager : MonoBehaviour
         if (Instance == null) Instance = this;
         else Destroy(gameObject);
 
-        Time.timeScale = 1f; // ✅ FORCE NORMAL TIME ON START
-
-        hasEnded = false;     // ✅ RESET STATE SAFELY
+        Time.timeScale = 1f;
+        hasEnded = false;
 
         if (EventSystem.current == null)
         {
@@ -64,14 +64,14 @@ public class GameStateManager : MonoBehaviour
         HideImmediate(gameOverPanel);
         HideImmediate(demoCompletePanel);
 
-        SetCursorAlwaysOn(); // ✅ ADD THIS
+        SetCursorAlwaysOn();
     }
 
     void Update()
     {
         if (currentState != GameState.Playing) return;
 
-        SetCursorAlwaysOn(); // ✅ ensures nothing overrides it
+        SetCursorAlwaysOn();
 
         CheckLoseCondition();
         CheckDemoComplete();
@@ -90,6 +90,7 @@ public class GameStateManager : MonoBehaviour
             TriggerGameOver();
         }
     }
+
     private void SetCursorAlwaysOn()
     {
         Cursor.lockState = CursorLockMode.None;
@@ -111,43 +112,40 @@ public class GameStateManager : MonoBehaviour
     // =========================
 
     private void TriggerGameOver()
-{
-    hasEnded = true;
-    SetState(GameState.GameOver);
+    {
+        hasEnded = true;
+        SetState(GameState.GameOver);
 
-    Debug.Log("💀 GAME OVER");
+        Debug.Log("💀 GAME OVER");
 
-    SetCursorAlwaysOn();
+        SetCursorAlwaysOn();
 
-    if (AudioManager.Instance != null)
-        AudioManager.Instance.FadeOutAllAudio();
+        if (AudioManager.Instance != null)
+            AudioManager.Instance.FadeOutAllAudio();
 
-    if (currentFade != null) StopCoroutine(currentFade);
-    currentFade = StartCoroutine(FadeInPanel(gameOverPanel));
+        if (currentFade != null) StopCoroutine(currentFade);
+        currentFade = StartCoroutine(FadeInPanel(gameOverPanel));
 
-    Time.timeScale = 0f;
+        Time.timeScale = 0f;
+    }
 
-    StartCoroutine(AutoRestartRoutine()); // ✅ ADD THIS
-}
-public void TriggerDemoComplete()
-{
-    hasEnded = true;
-    SetState(GameState.DemoComplete);
+    public void TriggerDemoComplete()
+    {
+        hasEnded = true;
+        SetState(GameState.DemoComplete);
 
-    Debug.Log("🎯 DEMO COMPLETE");
+        Debug.Log("🎯 DEMO COMPLETE");
 
-    SetCursorAlwaysOn();
+        SetCursorAlwaysOn();
 
-    if (AudioManager.Instance != null)
-        AudioManager.Instance.FadeOutAllAudio();
+        if (AudioManager.Instance != null)
+            AudioManager.Instance.FadeOutAllAudio();
 
-    if (currentFade != null) StopCoroutine(currentFade);
-    currentFade = StartCoroutine(FadeInPanel(demoCompletePanel));
+        if (currentFade != null) StopCoroutine(currentFade);
+        currentFade = StartCoroutine(FadeInPanel(demoCompletePanel));
 
-    Time.timeScale = 0f;
-
-    StartCoroutine(AutoRestartRoutine()); // ✅ ADD THIS
-}
+        Time.timeScale = 0f;
+    }
 
     // =========================
     // FADE SYSTEM
@@ -160,15 +158,14 @@ public void TriggerDemoComplete()
         panel.gameObject.SetActive(true);
 
         panel.alpha = 0f;
-        panel.interactable = true;      // 👈 MOVE EARLY
-        panel.blocksRaycasts = true;    // 👈 MOVE EARLY
+        panel.interactable = true;
+        panel.blocksRaycasts = true;
 
         float t = 0f;
 
         while (t < fadeDuration)
         {
             t += Time.unscaledDeltaTime;
-
             panel.alpha = t / fadeDuration;
             yield return null;
         }
@@ -184,13 +181,6 @@ public void TriggerDemoComplete()
         panel.interactable = false;
         panel.blocksRaycasts = false;
         panel.gameObject.SetActive(false);
-    }
-    private IEnumerator AutoRestartRoutine()
-    {
-        yield return new WaitForSecondsRealtime(autoRestartDelay);
-
-        Time.timeScale = 1f;
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
     // =========================
@@ -214,23 +204,23 @@ public void TriggerDemoComplete()
             StopCoroutine(currentFade);
 
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-        if(AudioManager.Instance != null)
+
+        if (AudioManager.Instance != null)
             AudioManager.Instance.FadeInAllAudio();
     }
-    
 
-    public void GoToMenu(string menuSceneName)
+    public void GoToMenu()
     {
         Time.timeScale = 1f;
-        SceneManager.LoadScene(menuSceneName);
+        SceneManager.LoadScene(mainMenuSceneName);
     }
 
-    public void StartGame(string gameplaySceneName)
+    public void StartGame()
     {
         Time.timeScale = 1f;
         SceneManager.LoadScene(gameplaySceneName);
     }
-    
+
     // =========================
     // DEBUG BUTTONS
     // =========================

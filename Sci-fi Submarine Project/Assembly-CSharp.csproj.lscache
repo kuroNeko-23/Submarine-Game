@@ -67,12 +67,14 @@ Assets/
   HoldToFix_Integrity.cs
   IntegrityController.cs
   LightFlicker.cs
+  MainMenuUIScript.cs
   MalfunctionManagerScript.cs
   MalfunctionTypes.cs
   MegalodonBrain.cs
   MegalodonManager.cs
   MegalodonSplineController.cs
   NodeManager.cs
+  PauseMenuManager.cs
   PressureController.cs
   ReactorNodeScript.cs
   RepairPromptUI.cs

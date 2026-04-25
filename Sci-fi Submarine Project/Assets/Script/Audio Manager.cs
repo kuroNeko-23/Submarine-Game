@@ -28,6 +28,7 @@ public class AudioManager : MonoBehaviour
     [SerializeField] private AudioSource mainPanelUIButtonClick;
     [SerializeField] private AudioSource systemPanelUIButtonClick;
     [SerializeField] private AudioSource errorPanelSFX;
+    [SerializeField] private AudioSource mainUIClickSFX;
 
     [Header("Monster Audio Groups")]
     [SerializeField] private AudioSource impactAudioSources;
@@ -152,7 +153,7 @@ public class AudioManager : MonoBehaviour
     public void PlayMainPanelUIButton() => PlayOneShot(mainPanelUIButtonClick);
     public void PlaySystemPanelUIButton() => PlayOneShot(systemPanelUIButtonClick);
     public void PlayErrorPanelSFX() => PlayOneShot(errorPanelSFX);
-
+    public void PlayMainUIClick() => PlayOneShot(mainUIClickSFX);
     // =========================
     // MONSTER AUDIO
     // =========================
