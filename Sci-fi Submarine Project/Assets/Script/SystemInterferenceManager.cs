@@ -1,5 +1,6 @@
 using UnityEngine;
 using Sirenix.OdinInspector;
+using System.Collections.Generic;
 
 public class SystemInterferenceManager : MonoBehaviour
 {
@@ -131,5 +132,21 @@ public class SystemInterferenceManager : MonoBehaviour
             AudioManager.Instance.PlayErrorPanelSFX();
 
         ResetAll();
+    }
+    // =========================
+    // RANDOM TRIGGER (NEW)
+    // =========================
+
+    public void TriggerRandomInterference()
+    {
+        List<SystemType> list = new List<SystemType>
+        {
+            SystemType.Power,
+            SystemType.Heat,
+            SystemType.Pressure
+        };
+
+        SystemType selected = list[Random.Range(0, list.Count)];
+        TriggerMalfunction(selected);
     }
 }

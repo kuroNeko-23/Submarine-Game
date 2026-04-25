@@ -7,10 +7,10 @@ public class MegalodonManager : MonoBehaviour
     [SerializeField] private GameObject megalodonRoot;
     [SerializeField] private MegalodonSplineController splineController;
 
-    private bool isActive = false;
+    private bool isActive;
 
     // =========================
-    // CORE CONTROL
+    // CORE SPAWN SYSTEM
     // =========================
 
     public void Spawn()
@@ -19,8 +19,6 @@ public class MegalodonManager : MonoBehaviour
 
         megalodonRoot.SetActive(true);
         isActive = true;
-
-        Debug.Log("🦈 Megalodon Spawned");
     }
 
     public void Despawn()
@@ -29,38 +27,72 @@ public class MegalodonManager : MonoBehaviour
 
         megalodonRoot.SetActive(false);
         isActive = false;
-
-        Debug.Log("👻 Megalodon Despawned");
     }
 
     // =========================
-    // BEHAVIOR
+    // FAR
     // =========================
 
-    public void SpawnFar()
+    public void SpawnFarRight()
     {
         Spawn();
-        splineController.PlayLoop("Far");
+        splineController.PlayFarRight();
     }
 
-    public void SpawnClose()
+    public void SpawnFarLeft()
     {
         Spawn();
-        splineController.PlayLoop("Close");
+        splineController.PlayFarLeft();
     }
+
+    // =========================
+    // CLOSE
+    // =========================
+
+    public void SpawnCloseRight()
+    {
+        Spawn();
+        splineController.PlayCloseRight();
+    }
+
+    public void SpawnCloseLeft()
+    {
+        Spawn();
+        splineController.PlayCloseLeft();
+    }
+
+    // =========================
+    // WINDOW PASS
+    // =========================
+
+    public void WindowPassRight()
+    {
+        Spawn();
+
+        if (AudioManager.Instance != null)
+            AudioManager.Instance.PlaySharkWoosh();
+
+        splineController.PlayWindowPassRight();
+    }
+
+    public void WindowPassLeft()
+    {
+        Spawn();
+
+        if (AudioManager.Instance != null)
+            AudioManager.Instance.PlaySharkWoosh();
+
+        splineController.PlayWindowPassLeft();
+    }
+
+    // =========================
+    // ATTACK
+    // =========================
 
     public void Attack()
     {
         Spawn();
-        splineController.PlayOneShot("Attack");
-    }
-    public void WindowPass()
-    {
-        Spawn(); // ensure it's active
-
-        splineController.PlayOneShot("WindowPass");
-
-        Debug.Log("🪟 Megalodon Window Pass");
+        splineController.PlayAttack();
     }
 
     // =========================
@@ -68,37 +100,29 @@ public class MegalodonManager : MonoBehaviour
     // =========================
 
     [Button("🟢 Spawn")]
-    private void DebugSpawn()
-    {
-        Spawn();
-    }
+    private void DebugSpawn() => Spawn();
 
     [Button("🔴 Despawn")]
-    private void DebugDespawn()
-    {
-        Despawn();
-    }
+    private void DebugDespawn() => Despawn();
 
-    [Button("🌊 Spawn Far")]
-    private void DebugFar()
-    {
-        SpawnFar();
-    }
+    [Button("🌊 Far Right")]
+    private void DebugFarRight() => SpawnFarRight();
 
-    [Button("🪟 Spawn Close")]
-    private void DebugClose()
-    {
-        SpawnClose();
-    }
+    [Button("🌊 Far Left")]
+    private void DebugFarLeft() => SpawnFarLeft();
+
+    [Button("🪸 Close Right")]
+    private void DebugCloseRight() => SpawnCloseRight();
+
+    [Button("🪸 Close Left")]
+    private void DebugCloseLeft() => SpawnCloseLeft();
+
+    [Button("🪟 Window Right")]
+    private void DebugWindowRight() => WindowPassRight();
+
+    [Button("🪟 Window Left")]
+    private void DebugWindowLeft() => WindowPassLeft();
 
     [Button("⚡ Attack")]
-    private void DebugAttack()
-    {
-        Attack();
-    }
-    [Button("🪟 Window Pass")]
-    private void DebugWindowPass()
-    {
-        WindowPass();
-    }
+    private void DebugAttack() => Attack();
 }

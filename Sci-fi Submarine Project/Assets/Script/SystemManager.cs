@@ -16,7 +16,7 @@ public class SystemManager : MonoBehaviour
     public float power = 50f;
 
     [ReadOnly, ProgressBar(0, 100), GUIColor(1f, 0.4f, 0.2f)]
-    public float heat = 20f;
+    public float heat = 50f;
 
     [ReadOnly, ProgressBar(0, 100), GUIColor(0.2f, 1f, 0.3f)]
     public float integrity = 100f;

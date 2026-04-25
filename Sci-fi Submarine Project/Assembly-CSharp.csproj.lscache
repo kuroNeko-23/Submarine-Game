@@ -60,6 +60,7 @@ Assets/
   ControlPanelUI.cs
   CoolingController.cs
   DepthSystem.cs
+  DepthThreatController.cs
   DistanceFade.cs
   GameStateManager.cs
   HoldToFix.cs
@@ -67,6 +68,7 @@ Assets/
   IntegrityController.cs
   LightFlicker.cs
   MalfunctionManagerScript.cs
+  MalfunctionTypes.cs
   MegalodonBrain.cs
   MegalodonManager.cs
   MegalodonSplineController.cs

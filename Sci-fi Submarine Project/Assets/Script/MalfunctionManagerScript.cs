@@ -14,6 +14,7 @@ public class LeakMalfunctionManager : MonoBehaviour
 
     [Header("References")]
     [SerializeField] private SystemManager systemManager;
+    
 
     [Header("State")]
     [ReadOnly] public List<LeakType> activeLeaks = new List<LeakType>();
@@ -235,6 +236,55 @@ public class LeakMalfunctionManager : MonoBehaviour
                 AudioManager.Instance.StopHeatLeak();
                 break;
         }
+    }
+    // =========================
+    // RANDOM TRIGGERS (NEW)
+    // =========================
+
+    public void TriggerRandomLeak()
+    {
+        List<LeakType> available = GetAvailableLeaks();
+
+        if (available.Count == 0) return;
+
+        LeakType selected = available[Random.Range(0, available.Count)];
+        TriggerLeak(selected);
+    }
+
+    public void TriggerMultipleLeaks(int count)
+    {
+        List<LeakType> available = GetAvailableLeaks();
+
+        count = Mathf.Min(count, available.Count);
+
+        for (int i = 0; i < count; i++)
+        {
+            int index = Random.Range(0, available.Count);
+            TriggerLeak(available[index]);
+            available.RemoveAt(index);
+        }
+    }
+
+    public void TriggerAllLeaks()
+    {
+        foreach (var leak in GetAvailableLeaks())
+        {
+            TriggerLeak(leak);
+        }
+    }
+
+    private List<LeakType> GetAvailableLeaks()
+    {
+        List<LeakType> list = new List<LeakType>
+        {
+            LeakType.ReactorLeak,
+            LeakType.PressureLeak,
+            LeakType.HeatPipeLeak
+        };
+
+        list.RemoveAll(l => activeLeaks.Contains(l));
+
+        return list;
     }
 
     // =========================
