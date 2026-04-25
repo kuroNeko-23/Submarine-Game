@@ -28,14 +28,14 @@ public class CameraSwitch : MonoBehaviour
 
     void HandleInput()
     {
-        if (Keyboard.current.rightArrowKey.wasPressedThisFrame)
+        if (Keyboard.current.rightArrowKey.wasPressedThisFrame || Keyboard.current.dKey.wasPressedThisFrame)
         {
             currentIndex = (currentIndex + 1) % cameraPoints.Length;
             targetPoint = cameraPoints[currentIndex];
             nodeManager.SetNode((NodeType)currentIndex);
         }
 
-        if (Keyboard.current.leftArrowKey.wasPressedThisFrame)
+        if (Keyboard.current.leftArrowKey.wasPressedThisFrame || Keyboard.current.aKey.wasPressedThisFrame)
         {
             currentIndex--;
             if (currentIndex < 0)

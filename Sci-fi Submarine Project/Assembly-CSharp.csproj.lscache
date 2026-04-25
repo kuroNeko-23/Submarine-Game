@@ -63,6 +63,7 @@ Assets/
   DistanceFade.cs
   Game Phase Manger.cs
   GameStateManager.cs
+  GameTimer.cs
   HoldToFix.cs
   HoldToFix_Integrity.cs
   IntegrityController.cs

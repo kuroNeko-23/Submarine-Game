@@ -24,9 +24,6 @@ public class GameStateManager : MonoBehaviour
     [SerializeField] private CanvasGroup gameOverPanel;
     [SerializeField] private CanvasGroup demoCompletePanel;
 
-    [Header("Depth Settings")]
-    [SerializeField] private float targetDepth = 1000f;
-
     [Header("UI Fade Settings")]
     [SerializeField] private float fadeDuration = 1.5f;
 
@@ -42,7 +39,6 @@ public class GameStateManager : MonoBehaviour
     // =========================
     // INIT
     // =========================
-
     private void Awake()
     {
         if (Instance == null) Instance = this;
@@ -73,14 +69,13 @@ public class GameStateManager : MonoBehaviour
 
         SetCursorAlwaysOn();
 
+        // ONLY lose condition remains
         CheckLoseCondition();
-        CheckDemoComplete();
     }
 
     // =========================
-    // CONDITIONS
+    // LOSE CONDITION ONLY
     // =========================
-
     private void CheckLoseCondition()
     {
         if (hasEnded || systemManager == null) return;
@@ -91,26 +86,18 @@ public class GameStateManager : MonoBehaviour
         }
     }
 
+    // =========================
+    // CURSOR
+    // =========================
     private void SetCursorAlwaysOn()
     {
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
     }
 
-    private void CheckDemoComplete()
-    {
-        if (hasEnded || depthSystem == null) return;
-
-        if (depthSystem.CurrentDepth >= targetDepth)
-        {
-            TriggerDemoComplete();
-        }
-    }
-
     // =========================
     // STATE CHANGES
     // =========================
-
     private void TriggerGameOver()
     {
         hasEnded = true;
@@ -150,7 +137,6 @@ public class GameStateManager : MonoBehaviour
     // =========================
     // FADE SYSTEM
     // =========================
-
     private IEnumerator FadeInPanel(CanvasGroup panel)
     {
         if (panel == null) yield break;
@@ -186,7 +172,6 @@ public class GameStateManager : MonoBehaviour
     // =========================
     // STATE
     // =========================
-
     private void SetState(GameState newState)
     {
         currentState = newState;
@@ -195,7 +180,6 @@ public class GameStateManager : MonoBehaviour
     // =========================
     // BUTTONS
     // =========================
-
     public void RestartGame()
     {
         Time.timeScale = 1f;
@@ -224,7 +208,6 @@ public class GameStateManager : MonoBehaviour
     // =========================
     // DEBUG BUTTONS
     // =========================
-
     [Button("💀 Force Game Over (Debug)")]
     private void DebugGameOver()
     {
