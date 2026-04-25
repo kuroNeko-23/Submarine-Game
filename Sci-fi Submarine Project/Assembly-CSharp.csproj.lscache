@@ -75,6 +75,7 @@ Assets/
   MegalodonManager.cs
   MegalodonSplineController.cs
   NodeManager.cs
+  PanelControl.cs
   PauseMenuManager.cs
   PressureController.cs
   ReactorNodeScript.cs
