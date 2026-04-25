@@ -86,9 +86,6 @@ public class MegalodonSplineController : MonoBehaviour
 
         t = Mathf.Clamp01(t);
 
-        // =========================
-        // ATTACK TRIGGER
-        // =========================
         if (mode == MovementMode.OneShot &&
             currentType == SplineType.Attack &&
             !attackTriggered &&
@@ -121,9 +118,9 @@ public class MegalodonSplineController : MonoBehaviour
         }
     }
 
-    // =========================
-    // PLAY API (CLEAN)
-    // =========================
+    // =========================================================
+    // PLAY API (FAR / CLOSE / WINDOW / ATTACK)
+    // =========================================================
 
     public void PlayFarRight() => Play("Far_Right");
     public void PlayFarLeft() => Play("Far_Left");
@@ -134,24 +131,14 @@ public class MegalodonSplineController : MonoBehaviour
     public void PlayWindowPassRight() => Play("WindowPass_Right");
     public void PlayWindowPassLeft() => Play("WindowPass_Left");
 
+    // NEW WINDOW PASS VARIANTS
+    public void PlayWindowPassFront() => Play("WindowPass_Front");
+    public void PlayWindowPassPressure() => Play("WindowPass_Pressure");
+    public void PlayWindowPassHeat() => Play("WindowPass_Heat");
+
     public void PlayAttack() => Play("Attack");
 
-    public void PlayLoop(string id)
-    {
-        var s = Get(id);
-        if (s == null) return;
-
-        currentSpline = s.spline;
-        speed = s.speed;
-        currentType = s.type;
-
-        mode = MovementMode.Loop;
-
-        t = 0f;
-        ResetState();
-    }
-
-    public void PlayOneShot(string id)
+    private void Play(string id)
     {
         var s = Get(id);
         if (s == null) return;
@@ -166,9 +153,19 @@ public class MegalodonSplineController : MonoBehaviour
         ResetState();
     }
 
-    private void Play(string id)
+    public void PlayLoop(string id)
     {
-        PlayOneShot(id);
+        var s = Get(id);
+        if (s == null) return;
+
+        currentSpline = s.spline;
+        speed = s.speed;
+        currentType = s.type;
+
+        mode = MovementMode.Loop;
+
+        t = 0f;
+        ResetState();
     }
 
     private SplineData Get(string id)
@@ -188,9 +185,9 @@ public class MegalodonSplineController : MonoBehaviour
         exitTriggered = false;
     }
 
-    // =========================
+    // =========================================================
     // ATTACK EVENT
-    // =========================
+    // =========================================================
 
     private void TriggerAttackEvent()
     {
@@ -241,4 +238,17 @@ public class MegalodonSplineController : MonoBehaviour
         int single = UnityEngine.Random.Range(0, pool.Count);
         pool[single].Invoke();
     }
+    // =========================
+    // ATTACK (NODE BASED)
+    // =========================
+
+    public void PlayAttackFront() => Play("Attack_Front");
+
+    public void PlayAttackHeat() => Play("Attack_Heat");
+
+    public void PlayAttackPipes() => Play("Attack_Pipes");
+
+    public void PlayAttackElectricity() => Play("Attack_Electricity");
+
+    public void PlayAttackPressure() => Play("Attack_Pressure");
 }

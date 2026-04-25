@@ -48,7 +48,17 @@ public class CameraSwitch : MonoBehaviour
 
     void SmoothMove()
     {
-        transform.position = Vector3.Lerp(transform.position, targetPoint.position, Time.deltaTime * moveSpeed);
-        transform.rotation = Quaternion.Slerp(transform.rotation, targetPoint.rotation, Time.deltaTime * rotateSpeed);
+        Vector3 basePos = Vector3.Lerp(transform.position, targetPoint.position, Time.deltaTime * moveSpeed);
+        Quaternion baseRot = Quaternion.Slerp(transform.rotation, targetPoint.rotation, Time.deltaTime * rotateSpeed);
+
+        Vector3 shake = Vector3.zero;
+
+        if (TryGetComponent<CameraShake>(out var shakeComp))
+        {
+            shake = shakeComp.GetShakeOffset();
+        }
+
+        transform.position = basePos + shake;
+        transform.rotation = baseRot;
     }
 }

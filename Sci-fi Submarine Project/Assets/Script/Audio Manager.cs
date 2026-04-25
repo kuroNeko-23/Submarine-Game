@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class AudioManager : MonoBehaviour
 {
@@ -22,27 +23,30 @@ public class AudioManager : MonoBehaviour
     [SerializeField] private AudioSource heatOverloadAlarm;
     [SerializeField] private AudioSource pressureOverloadAlarm;
     [SerializeField] private AudioSource systemFailureAlarm;
+
     [Header("UI Audio Sources")]
     [SerializeField] private AudioSource mainPanelUIButtonClick;
     [SerializeField] private AudioSource systemPanelUIButtonClick;
     [SerializeField] private AudioSource errorPanelSFX;
+
     [Header("Monster Audio Groups")]
     [SerializeField] private AudioSource impactAudioSources;
     [SerializeField] private AudioSource sharkWooshSource;
 
-     [Header("Master Audio Groups")]
+    [Header("Master Audio Groups")]
     [SerializeField] private AudioSource[] allGameAudioSources;
 
     [Header("Fade Settings")]
     [SerializeField] private float fadeDuration = 3f;
 
+    private float[] baseVolumes;
+
     // =========================
-    // INIT (Singleton)
+    // INIT
     // =========================
 
     private void Awake()
     {
-        allGameAudioSources = Object.FindObjectsByType<AudioSource>(FindObjectsSortMode.None);
         if (Instance == null)
         {
             Instance = this;
@@ -51,9 +55,26 @@ public class AudioManager : MonoBehaviour
         else
         {
             Destroy(gameObject);
+            return;
         }
-        
 
+        RefreshAudioSources();
+    }
+
+    private void OnEnable()
+    {
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    private void OnDisable()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        RefreshAudioSources();
+        FadeInAllAudio(); // 🔥 AUTO FADE IN ON RESTART
     }
 
     void Start()
@@ -62,6 +83,25 @@ public class AudioManager : MonoBehaviour
         {
             ambientAudioSource.loop = true;
             ambientAudioSource.Play();
+        }
+
+        FadeInAllAudio(); // safety fallback
+    }
+
+    // =========================
+    // REFRESH AUDIO SYSTEM
+    // =========================
+
+    private void RefreshAudioSources()
+    {
+        allGameAudioSources = Object.FindObjectsByType<AudioSource>(FindObjectsSortMode.None);
+
+        baseVolumes = new float[allGameAudioSources.Length];
+
+        for (int i = 0; i < allGameAudioSources.Length; i++)
+        {
+            if (allGameAudioSources[i] != null)
+                baseVolumes[i] = allGameAudioSources[i].volume;
         }
     }
 
@@ -92,47 +132,36 @@ public class AudioManager : MonoBehaviour
     public void StopHeat() => Stop(heatSound);
 
     public void PlayPressure() => PlayOneShot(pressureSound);
-    
+
     public void PlayLowPowerAlarm() => PlayLoop(lowPowerAlarm);
     public void StopLowPowerAlarm() => Stop(lowPowerAlarm);
 
     public void PlayHeatOverloadAlarm() => PlayLoop(heatOverloadAlarm);
     public void StopHeatOverloadAlarm() => Stop(heatOverloadAlarm);
+
     public void PlayPressureOverloadAlarm() => PlayLoop(pressureOverloadAlarm);
     public void StopPressureOverloadAlarm() => Stop(pressureOverloadAlarm);
+
     public void PlaySystemFailureAlarm() => PlayLoop(systemFailureAlarm);
     public void StopSystemFailureAlarm() => Stop(systemFailureAlarm);
-    //public void StopPressure() => Stop(pressureSound);
 
     // =========================
     // UI AUDIO
     // =========================
 
-    public void PlayMainPanelUIButton()
-    {
-        PlayOneShot(mainPanelUIButtonClick);
-    }
-    public void PlaySystemPanelUIButton()
-    {
-        PlayOneShot(systemPanelUIButtonClick);
-    }
-    public void PlayErrorPanelSFX()
-    {
-        PlayOneShot(errorPanelSFX);
-    }
+    public void PlayMainPanelUIButton() => PlayOneShot(mainPanelUIButtonClick);
+    public void PlaySystemPanelUIButton() => PlayOneShot(systemPanelUIButtonClick);
+    public void PlayErrorPanelSFX() => PlayOneShot(errorPanelSFX);
 
     // =========================
     // MONSTER AUDIO
-    public void PlayImpactSFX()
-    {
-        PlayOneShot(impactAudioSources);
-    }
-    public void PlaySharkWoosh()
-    {
-        PlayOneShot(sharkWooshSource);
-    }
     // =========================
-    // GENERIC HELPERS
+
+    public void PlayImpactSFX() => PlayOneShot(impactAudioSources);
+    public void PlaySharkWoosh() => PlayOneShot(sharkWooshSource);
+
+    // =========================
+    // HELPERS
     // =========================
 
     private void PlayLoop(AudioSource source)
@@ -151,39 +180,37 @@ public class AudioManager : MonoBehaviour
         if (source == null) return;
 
         if (source.isPlaying)
-        {
             source.Stop();
-        }
     }
 
     private void PlayOneShot(AudioSource source)
     {
-        if (source == null) return;
-
+        if (source == null || source.clip == null) return;
         source.PlayOneShot(source.clip);
     }
-    // All Audio Control
+
+    // =========================
+    // FADE SYSTEM
+    // =========================
+
     public void FadeOutAllAudio()
     {
+        StopAllCoroutines();
         StartCoroutine(FadeAll(1f, 0f));
     }
 
     public void FadeInAllAudio()
     {
+        StopAllCoroutines();
         StartCoroutine(FadeAll(0f, 1f));
     }
+
     private IEnumerator FadeAll(float start, float end)
     {
         float t = 0f;
 
-        // cache starting volumes
-        float[] originalVolumes = new float[allGameAudioSources.Length];
-
-        for (int i = 0; i < allGameAudioSources.Length; i++)
-        {
-            if (allGameAudioSources[i] == null) continue;
-            originalVolumes[i] = allGameAudioSources[i].volume;
-        }
+        if (baseVolumes == null || baseVolumes.Length != allGameAudioSources.Length)
+            RefreshAudioSources();
 
         while (t < fadeDuration)
         {
@@ -194,9 +221,11 @@ public class AudioManager : MonoBehaviour
             {
                 if (allGameAudioSources[i] == null) continue;
 
+                float baseVol = baseVolumes[i];
+
                 allGameAudioSources[i].volume = Mathf.Lerp(
-                    originalVolumes[i] * start,
-                    originalVolumes[i] * end,
+                    baseVol * start,
+                    baseVol * end,
                     lerp
                 );
             }
@@ -204,12 +233,11 @@ public class AudioManager : MonoBehaviour
             yield return null;
         }
 
-        // ensure final state
         for (int i = 0; i < allGameAudioSources.Length; i++)
         {
             if (allGameAudioSources[i] == null) continue;
-            allGameAudioSources[i].volume = originalVolumes[i] * end;
+
+            allGameAudioSources[i].volume = baseVolumes[i] * end;
         }
     }
-
 }

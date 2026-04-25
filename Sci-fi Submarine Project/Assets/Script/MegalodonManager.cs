@@ -6,6 +6,7 @@ public class MegalodonManager : MonoBehaviour
     [Header("References")]
     [SerializeField] private GameObject megalodonRoot;
     [SerializeField] private MegalodonSplineController splineController;
+    [SerializeField] private NodeManager nodeManager;
 
     private bool isActive;
 
@@ -62,7 +63,7 @@ public class MegalodonManager : MonoBehaviour
     }
 
     // =========================
-    // WINDOW PASS
+    // WINDOW PASS (DIRECT)
     // =========================
 
     public void WindowPassRight()
@@ -85,6 +86,73 @@ public class MegalodonManager : MonoBehaviour
         splineController.PlayWindowPassLeft();
     }
 
+    public void WindowPassFront()
+    {
+        Spawn();
+
+        if (AudioManager.Instance != null)
+            AudioManager.Instance.PlaySharkWoosh();
+
+        splineController.PlayWindowPassFront();
+    }
+
+    public void WindowPassPressure()
+    {
+        Spawn();
+
+        if (AudioManager.Instance != null)
+            AudioManager.Instance.PlaySharkWoosh();
+
+        splineController.PlayWindowPassPressure();
+    }
+
+    public void WindowPassHeat()
+    {
+        Spawn();
+
+        if (AudioManager.Instance != null)
+            AudioManager.Instance.PlaySharkWoosh();
+
+        splineController.PlayWindowPassHeat();
+    }
+
+    // =========================
+    // 🧠 NODE-BASED WINDOW PASS (NEW SYSTEM)
+    // =========================
+
+    public void WindowPassByNode(NodeType node)
+    {
+        Spawn();
+
+        if (AudioManager.Instance != null)
+            AudioManager.Instance.PlaySharkWoosh();
+
+        switch (node)
+        {
+            case NodeType.ControlPanel:
+                splineController.PlayWindowPassFront();
+                break;
+
+            case NodeType.Cooling:
+            case NodeType.Reactor_Pipes:
+                splineController.PlayWindowPassHeat();
+                break;
+
+            case NodeType.Reactor:
+            case NodeType.Pressure:
+            case NodeType.Electricity:
+                splineController.PlayWindowPassPressure();
+                break;
+
+            default:
+                splineController.PlayWindowPassFront();
+                break;
+        }
+
+        // 🧹 FORCE DESPAWN AFTER ACTION
+    }
+    
+
     // =========================
     // ATTACK
     // =========================
@@ -93,6 +161,44 @@ public class MegalodonManager : MonoBehaviour
     {
         Spawn();
         splineController.PlayAttack();
+    }
+    public void AttackByNode(NodeType node)
+    {
+        Spawn();
+
+        if (AudioManager.Instance != null)
+            AudioManager.Instance.PlaySharkWoosh();
+
+        switch (node)
+        {
+            case NodeType.ControlPanel:
+                splineController.PlayAttackFront();
+                break;
+
+            case NodeType.Reactor_Pipes:
+                splineController.PlayAttackPipes();
+                break;
+
+            case NodeType.Cooling:
+                splineController.PlayAttackHeat();
+                break;
+
+            case NodeType.Reactor:
+                splineController.PlayAttackElectricity();
+                break;
+
+            case NodeType.Electricity:
+                splineController.PlayAttackElectricity();
+                break;
+
+            case NodeType.Pressure:
+                splineController.PlayAttackPressure();
+                break;
+
+            default:
+                splineController.PlayAttackFront();
+                break;
+        }
     }
 
     // =========================
@@ -123,6 +229,74 @@ public class MegalodonManager : MonoBehaviour
     [Button("🪟 Window Left")]
     private void DebugWindowLeft() => WindowPassLeft();
 
+    [Button("🧠 Window (Node Based)")]
+    private void DebugWindowNode()
+    {
+        // safe fallback if NodeManager not referenced here
+        var node = FindObjectOfType<NodeManager>();
+        if (node != null)
+            WindowPassByNode(node.currentNode);
+    }
+
+    [Button("🪟 Window Front")]
+    private void DebugWindowFront() => WindowPassFront();
+
+    [Button("🪟 Window Pressure")]
+    private void DebugWindowPressure() => WindowPassPressure();
+
+    [Button("🪟 Window Heat")]
+    private void DebugWindowHeat() => WindowPassHeat();
+
     [Button("⚡ Attack")]
     private void DebugAttack() => Attack();
+    [Button("💀 Attack Front")]
+    private void DebugAttackFront()
+    {
+        Spawn();
+        splineController.PlayAttackFront();
+    }
+
+    [Button("💀 Attack Heat")]
+    private void DebugAttackHeat()
+    {
+        Spawn();
+        splineController.PlayAttackHeat();
+    }
+
+    [Button("💀 Attack Pipes")]
+    private void DebugAttackPipes()
+    {
+        Spawn();
+        splineController.PlayAttackPipes();
+    }
+
+    [Button("💀 Attack Electricity")]
+    private void DebugAttackElectricity()
+    {
+        Spawn();
+        splineController.PlayAttackElectricity();
+    }
+
+    [Button("💀 Attack Pressure")]
+    private void DebugAttackPressure()
+    {
+        Spawn();
+        splineController.PlayAttackPressure();
+    }
+        [Button("💀 Node Attack Test")]
+    private void DebugNodeAttack()
+    {
+        if (nodeManager == null)
+        {
+            nodeManager = FindObjectOfType<NodeManager>();
+
+            if (nodeManager == null)
+            {
+                Debug.LogWarning("NodeManager is NULL");
+                return;
+            }
+        }
+
+        AttackByNode(nodeManager.currentNode);
+    }
 }

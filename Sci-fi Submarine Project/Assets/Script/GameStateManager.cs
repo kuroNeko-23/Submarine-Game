@@ -1,5 +1,7 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
+using Sirenix.OdinInspector;
 using System.Collections;
 
 public class GameStateManager : MonoBehaviour
@@ -27,6 +29,9 @@ public class GameStateManager : MonoBehaviour
 
     [Header("UI Fade Settings")]
     [SerializeField] private float fadeDuration = 1.5f;
+    [Header("Auto Restart")]
+    [SerializeField] private float autoRestartDelay = 5f;
+    [SerializeField] private string gameplaySceneName;
 
     private GameState currentState;
     private bool hasEnded = false;
@@ -41,6 +46,15 @@ public class GameStateManager : MonoBehaviour
     {
         if (Instance == null) Instance = this;
         else Destroy(gameObject);
+
+        Time.timeScale = 1f; // ✅ FORCE NORMAL TIME ON START
+
+        hasEnded = false;     // ✅ RESET STATE SAFELY
+
+        if (EventSystem.current == null)
+        {
+            Debug.LogError("NO EVENT SYSTEM FOUND IN SCENE!");
+        }
     }
 
     void Start()
@@ -49,11 +63,15 @@ public class GameStateManager : MonoBehaviour
 
         HideImmediate(gameOverPanel);
         HideImmediate(demoCompletePanel);
+
+        SetCursorAlwaysOn(); // ✅ ADD THIS
     }
 
     void Update()
     {
         if (currentState != GameState.Playing) return;
+
+        SetCursorAlwaysOn(); // ✅ ensures nothing overrides it
 
         CheckLoseCondition();
         CheckDemoComplete();
@@ -72,6 +90,11 @@ public class GameStateManager : MonoBehaviour
             TriggerGameOver();
         }
     }
+    private void SetCursorAlwaysOn()
+    {
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+    }
 
     private void CheckDemoComplete()
     {
@@ -88,36 +111,43 @@ public class GameStateManager : MonoBehaviour
     // =========================
 
     private void TriggerGameOver()
-    {
-        hasEnded = true;
-        SetState(GameState.GameOver);
+{
+    hasEnded = true;
+    SetState(GameState.GameOver);
 
-        Debug.Log("💀 GAME OVER");
+    Debug.Log("💀 GAME OVER");
 
-        if (AudioManager.Instance != null)
-            AudioManager.Instance.FadeOutAllAudio();
+    SetCursorAlwaysOn();
 
-        if (currentFade != null) StopCoroutine(currentFade);
-        currentFade = StartCoroutine(FadeInPanel(gameOverPanel));
+    if (AudioManager.Instance != null)
+        AudioManager.Instance.FadeOutAllAudio();
 
-        Time.timeScale = 0f;
-    }
+    if (currentFade != null) StopCoroutine(currentFade);
+    currentFade = StartCoroutine(FadeInPanel(gameOverPanel));
 
-    private void TriggerDemoComplete()
-    {
-        hasEnded = true;
-        SetState(GameState.DemoComplete);
+    Time.timeScale = 0f;
 
-        Debug.Log("🎯 DEMO COMPLETE");
+    StartCoroutine(AutoRestartRoutine()); // ✅ ADD THIS
+}
+public void TriggerDemoComplete()
+{
+    hasEnded = true;
+    SetState(GameState.DemoComplete);
 
-        if (AudioManager.Instance != null)
-            AudioManager.Instance.FadeOutAllAudio();
+    Debug.Log("🎯 DEMO COMPLETE");
 
-        if (currentFade != null) StopCoroutine(currentFade);
-        currentFade = StartCoroutine(FadeInPanel(demoCompletePanel));
+    SetCursorAlwaysOn();
 
-        Time.timeScale = 0f;
-    }
+    if (AudioManager.Instance != null)
+        AudioManager.Instance.FadeOutAllAudio();
+
+    if (currentFade != null) StopCoroutine(currentFade);
+    currentFade = StartCoroutine(FadeInPanel(demoCompletePanel));
+
+    Time.timeScale = 0f;
+
+    StartCoroutine(AutoRestartRoutine()); // ✅ ADD THIS
+}
 
     // =========================
     // FADE SYSTEM
@@ -130,8 +160,8 @@ public class GameStateManager : MonoBehaviour
         panel.gameObject.SetActive(true);
 
         panel.alpha = 0f;
-        panel.interactable = false;
-        panel.blocksRaycasts = false;
+        panel.interactable = true;      // 👈 MOVE EARLY
+        panel.blocksRaycasts = true;    // 👈 MOVE EARLY
 
         float t = 0f;
 
@@ -139,15 +169,11 @@ public class GameStateManager : MonoBehaviour
         {
             t += Time.unscaledDeltaTime;
 
-            float progress = t / fadeDuration;
-            panel.alpha = progress;
-
+            panel.alpha = t / fadeDuration;
             yield return null;
         }
 
         panel.alpha = 1f;
-        panel.interactable = true;
-        panel.blocksRaycasts = true;
     }
 
     private void HideImmediate(CanvasGroup panel)
@@ -158,6 +184,13 @@ public class GameStateManager : MonoBehaviour
         panel.interactable = false;
         panel.blocksRaycasts = false;
         panel.gameObject.SetActive(false);
+    }
+    private IEnumerator AutoRestartRoutine()
+    {
+        yield return new WaitForSecondsRealtime(autoRestartDelay);
+
+        Time.timeScale = 1f;
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
     // =========================
@@ -176,8 +209,15 @@ public class GameStateManager : MonoBehaviour
     public void RestartGame()
     {
         Time.timeScale = 1f;
+
+        if (currentFade != null)
+            StopCoroutine(currentFade);
+
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        if(AudioManager.Instance != null)
+            AudioManager.Instance.FadeInAllAudio();
     }
+    
 
     public void GoToMenu(string menuSceneName)
     {
@@ -189,5 +229,34 @@ public class GameStateManager : MonoBehaviour
     {
         Time.timeScale = 1f;
         SceneManager.LoadScene(gameplaySceneName);
+    }
+    
+    // =========================
+    // DEBUG BUTTONS
+    // =========================
+
+    [Button("💀 Force Game Over (Debug)")]
+    private void DebugGameOver()
+    {
+        TriggerGameOver();
+    }
+
+    [Button("🎯 Force Win (Debug)")]
+    private void DebugWin()
+    {
+        TriggerDemoComplete();
+    }
+
+    [Button("▶ Reset Game State")]
+    private void DebugResetState()
+    {
+        Time.timeScale = 1f;
+        hasEnded = false;
+        SetState(GameState.Playing);
+
+        HideImmediate(gameOverPanel);
+        HideImmediate(demoCompletePanel);
+
+        Debug.Log("🔄 Game State Reset");
     }
 }
