@@ -78,9 +78,11 @@ Assets/
   PanelControl.cs
   PauseMenuManager.cs
   PressureController.cs
+  RadarState.cs
   ReactorNodeScript.cs
   RepairPromptUI.cs
   RulerLoop.cs
+  SharkRadarController.cs
   SystemFailureUI.cs
   SystemInterferenceManager.cs
   SystemManager.cs

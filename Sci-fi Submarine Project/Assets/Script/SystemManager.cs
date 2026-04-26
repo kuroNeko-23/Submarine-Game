@@ -66,7 +66,11 @@ public class SystemManager : MonoBehaviour
     public float pressurePowerCost = 15f;
 
     [Title("INTEGRITY SYSTEM")]
-    public float spikeDrainRate = 5f;
+    //public float spikeDrainRate = 5f; // (keep if you want fallback)
+
+    public float pressureSpikeDrainRate = 8f;   // 🔴 more dangerous
+    public float heatSpikeDrainRate = 3f;       // 🟠 slower damage
+
     public float failureDrainRate = 15f;
 
     // 🔥 NEW: passive regen rate
@@ -247,16 +251,26 @@ public class SystemManager : MonoBehaviour
         bool pressureSpike = pressure >= 100f;
         bool heatCritical = IsHeatCritical();
 
+        // 🔴 HARD FAILURE
         if (isFailing)
         {
             integrity -= failureDrainRate * Time.deltaTime;
             return;
         }
 
-        if (pressureSpike || heatCritical)
-        {
-            integrity -= spikeDrainRate * Time.deltaTime;
-        }
+        // =========================
+        // 🔥 SEPARATE DAMAGE LOGIC
+        // =========================
+
+        float damage = 0f;
+
+        if (pressureSpike)
+            damage += pressureSpikeDrainRate;
+
+        if (heatCritical)
+            damage += heatSpikeDrainRate;
+
+        integrity -= damage * Time.deltaTime;
     }
 
     // =========================
@@ -315,5 +329,92 @@ public class SystemManager : MonoBehaviour
         power = Mathf.Clamp(power, 0, 100);
         heat = Mathf.Clamp(heat, 0, 100);
         integrity = Mathf.Clamp(integrity, 0, 100);
+    }
+    [Title("DEBUG - QUICK TEST STATES")]
+
+    // =========================
+    // 🔴 PRESSURE SPIKE
+    // =========================
+    [Button("⚠️ Trigger Pressure Spike")]
+    private void DebugPressureCritical()
+    {
+        pressure = 100f;
+        Debug.Log("DEBUG: Pressure set to CRITICAL");
+    }
+
+    // =========================
+    // 🔥 HEAT OVERLOAD
+    // =========================
+    [Button("🔥 Trigger Heat Overload")]
+    private void DebugHeatCriticalHigh()
+    {
+        heat = 100f;
+        Debug.Log("DEBUG: Heat set to OVERHEAT");
+    }
+
+    // =========================
+    // ❄️ HEAT UNDERLOAD
+    // =========================
+    [Button("❄️ Trigger Underheat")]
+    private void DebugHeatCriticalLow()
+    {
+        heat = 0f;
+        Debug.Log("DEBUG: Heat set to UNDERHEAT");
+    }
+
+    // =========================
+    // 💥 DOUBLE CRITICAL (STACK TEST)
+    // =========================
+    [Button("💥 Trigger FULL CRITICAL (Heat + Pressure)")]
+    private void DebugFullCritical()
+    {
+        pressure = 100f;
+        heat = 100f;
+        Debug.Log("DEBUG: FULL CRITICAL STATE");
+    }
+
+    // =========================
+    // 🔋 LOW POWER
+    // =========================
+    [Button("🔋 Trigger Low Power")]
+    private void DebugLowPower()
+    {
+        power = 5f;
+        Debug.Log("DEBUG: Low Power Triggered");
+    }
+
+    // =========================
+    // 🧯 STABILIZE SYSTEM (FOR REGEN TEST)
+    // =========================
+    [Button("🧯 Stabilize Systems (Test Regen)")]
+    private void DebugStableSystem()
+    {
+        pressure = 20f;
+        heat = 50f;
+        power = 50f;
+        isLocked = false;
+        isFailing = false;
+
+        Debug.Log("DEBUG: System Stabilized (Regen should start)");
+    }
+
+    // =========================
+    // ❤️ DAMAGE INTEGRITY
+    // =========================
+    [Button("💔 Damage Integrity (-25)")]
+    private void DebugDamageIntegrity()
+    {
+        integrity -= 25f;
+        Debug.Log("DEBUG: Integrity Damaged");
+    }
+
+    // =========================
+    // 💚 HEAL INTEGRITY
+    // =========================
+    [Button("💚 Heal Integrity (+25)")]
+    private void DebugHealIntegrity()
+    {
+        integrity += 25f;
+        Debug.Log("DEBUG: Integrity Healed");
     }
 }

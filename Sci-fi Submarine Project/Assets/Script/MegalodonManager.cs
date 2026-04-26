@@ -1,5 +1,6 @@
 using UnityEngine;
 using Sirenix.OdinInspector;
+using System.Collections;
 
 public class MegalodonManager : MonoBehaviour
 {
@@ -7,6 +8,31 @@ public class MegalodonManager : MonoBehaviour
     [SerializeField] private GameObject megalodonRoot;
     [SerializeField] private MegalodonSplineController splineController;
     [SerializeField] private NodeManager nodeManager;
+    [SerializeField] private SystemManager systemManager;
+    [SerializeField] private LeakMalfunctionManager leakManager;
+    [Header("Attack Radar Timing")]
+    [SerializeField] private SharkRadarController radarController;
+    [SerializeField] private float preAttackDelay = 1.0f;
+    [SerializeField] private float preAttackMinDelay = 0.6f;
+    [SerializeField] private float preAttackMaxDelay = 1.4f;
+    [SerializeField] private bool useRandomPreDelay = false;
+    // =========================
+    // 🦈 ATTACK VARIANTS
+    // =========================
+
+    [Header("Attack A - Pressure Slam")]
+    [SerializeField] private float pressureSlamAmount = 40f;
+    [SerializeField] private bool pressureSlamTriggersLeak = true;
+
+    [Header("Attack B - Power Disruption")]
+    [SerializeField] private float powerDrainAmount = 50f;
+    [SerializeField] private float systemLockDuration = 3f;
+
+    [Header("Attack C - Multi Leak Burst")]
+    [SerializeField] private int minLeaks = 2;
+    [SerializeField] private int maxLeaks = 4;
+    [SerializeField] private float leakPressureBonus = 15f;
+    
 
     private bool isActive;
 
@@ -28,6 +54,8 @@ public class MegalodonManager : MonoBehaviour
 
         megalodonRoot.SetActive(false);
         isActive = false;
+
+        radarController?.SetRadarState(SharkRadarController.RadarState.None);
     }
 
     // =========================
@@ -37,12 +65,14 @@ public class MegalodonManager : MonoBehaviour
     public void SpawnFarRight()
     {
         Spawn();
+        radarController?.SetRadarState(SharkRadarController.RadarState.Far);
         splineController.PlayFarRight();
     }
 
     public void SpawnFarLeft()
     {
         Spawn();
+        radarController?.SetRadarState(SharkRadarController.RadarState.Far);
         splineController.PlayFarLeft();
     }
 
@@ -53,12 +83,14 @@ public class MegalodonManager : MonoBehaviour
     public void SpawnCloseRight()
     {
         Spawn();
+        radarController?.SetRadarState(SharkRadarController.RadarState.Close);
         splineController.PlayCloseRight();
     }
 
     public void SpawnCloseLeft()
     {
         Spawn();
+        radarController?.SetRadarState(SharkRadarController.RadarState.Close);
         splineController.PlayCloseLeft();
     }
 
@@ -69,7 +101,7 @@ public class MegalodonManager : MonoBehaviour
     public void WindowPassRight()
     {
         Spawn();
-
+        radarController?.SetRadarState(SharkRadarController.RadarState.Close);
         if (AudioManager.Instance != null)
             AudioManager.Instance.PlaySharkWoosh();
 
@@ -79,7 +111,8 @@ public class MegalodonManager : MonoBehaviour
     public void WindowPassLeft()
     {
         Spawn();
-
+        radarController?.SetRadarState(SharkRadarController.RadarState.Close);
+        
         if (AudioManager.Instance != null)
             AudioManager.Instance.PlaySharkWoosh();
 
@@ -89,6 +122,8 @@ public class MegalodonManager : MonoBehaviour
     public void WindowPassFront()
     {
         Spawn();
+
+        radarController?.SetRadarState(SharkRadarController.RadarState.Close);
 
         if (AudioManager.Instance != null)
             AudioManager.Instance.PlaySharkWoosh();
@@ -100,6 +135,8 @@ public class MegalodonManager : MonoBehaviour
     {
         Spawn();
 
+        radarController?.SetRadarState(SharkRadarController.RadarState.Close);
+
         if (AudioManager.Instance != null)
             AudioManager.Instance.PlaySharkWoosh();
 
@@ -109,6 +146,8 @@ public class MegalodonManager : MonoBehaviour
     public void WindowPassHeat()
     {
         Spawn();
+
+        radarController?.SetRadarState(SharkRadarController.RadarState.Close);
 
         if (AudioManager.Instance != null)
             AudioManager.Instance.PlaySharkWoosh();
@@ -123,7 +162,7 @@ public class MegalodonManager : MonoBehaviour
     public void WindowPassByNode(NodeType node)
     {
         Spawn();
-
+        radarController?.SetRadarState(SharkRadarController.RadarState.Close);
         if (AudioManager.Instance != null)
             AudioManager.Instance.PlaySharkWoosh();
 
@@ -160,12 +199,84 @@ public class MegalodonManager : MonoBehaviour
     public void Attack()
     {
         Spawn();
-        splineController.PlayAttack();
-    }
-    public void AttackByNode(NodeType node)
-    {
-        Spawn();
 
+        StartCoroutine(PreAttackRadar(() =>
+        {
+            NodeType node = nodeManager != null ? nodeManager.currentNode : NodeType.ControlPanel;
+
+            ExecuteAttack(node);
+        }));
+}
+    void ExecuteAttack(NodeType node)
+    {
+        int roll = Random.Range(0, 3);
+
+        // 1️⃣ PLAY ANIMATION BASED ON NODE
+        PlayAttackAnimationByNode(node);
+
+        // 2️⃣ APPLY EFFECT BASED ON TYPE
+        switch (roll)
+        {
+            case 0:
+                ApplyPressureSlam();
+                break;
+
+            case 1:
+                ApplyPowerDisruption();
+                break;
+
+            case 2:
+                ApplyMultiLeak();
+                break;
+        }
+    }
+    void ApplyPressureSlam()
+    {
+        Debug.Log("🦈 ATTACK A: PRESSURE SLAM");
+
+        if (systemManager != null)
+            systemManager.pressure += pressureSlamAmount;
+
+        if (pressureSlamTriggersLeak)
+            leakManager?.TriggerRandomLeak();
+    }
+    void ApplyPowerDisruption()
+    {
+        Debug.Log("🦈 ATTACK B: POWER DISRUPTION");
+
+        if (systemManager != null)
+            systemManager.power -= powerDrainAmount;
+
+        StartCoroutine(TemporarySystemLock());
+    }
+    IEnumerator TemporarySystemLock()
+    {
+        if (systemManager == null) yield break;
+
+        systemManager.isLocked = true;
+
+        Debug.Log("⚡ Systems Locked");
+
+        yield return new WaitForSeconds(systemLockDuration);
+
+        systemManager.isLocked = false;
+
+        Debug.Log("⚡ Systems Restored");
+    }
+    void ApplyMultiLeak()
+    {
+        Debug.Log("🦈 ATTACK C: MULTI LEAK BURST");
+
+        int count = Random.Range(minLeaks, maxLeaks + 1);
+
+        for (int i = 0; i < count; i++)
+            leakManager?.TriggerRandomLeak();
+
+        if (systemManager != null)
+            systemManager.pressure += leakPressureBonus;
+    }
+    void PlayAttackAnimationByNode(NodeType node)
+    {
         if (AudioManager.Instance != null)
             AudioManager.Instance.PlaySharkWoosh();
 
@@ -184,9 +295,6 @@ public class MegalodonManager : MonoBehaviour
                 break;
 
             case NodeType.Reactor:
-                splineController.PlayAttackElectricity();
-                break;
-
             case NodeType.Electricity:
                 splineController.PlayAttackElectricity();
                 break;
@@ -200,7 +308,36 @@ public class MegalodonManager : MonoBehaviour
                 break;
         }
     }
+    IEnumerator PreAttackRadar(System.Action attackAction)
+    {
+        radarController?.SetRadarState(SharkRadarController.RadarState.Attack);
 
+        float delay = useRandomPreDelay
+            ? Random.Range(preAttackMinDelay, preAttackMaxDelay)
+            : preAttackDelay;
+
+        yield return new WaitForSeconds(delay);
+
+        attackAction?.Invoke();
+    }
+    /// <summary>
+    /// Helper
+    /// </summary>
+    private NodeType GetDebugNode()
+    {
+        if (nodeManager == null)
+        {
+            nodeManager = FindObjectOfType<NodeManager>();
+
+            if (nodeManager == null)
+            {
+                Debug.LogWarning("NodeManager is NULL, defaulting to ControlPanel");
+                return NodeType.ControlPanel;
+            }
+        }
+
+        return nodeManager.currentNode;
+    }
     // =========================
     // DEBUG
     // =========================
@@ -283,20 +420,31 @@ public class MegalodonManager : MonoBehaviour
         Spawn();
         splineController.PlayAttackPressure();
     }
-        [Button("💀 Node Attack Test")]
-    private void DebugNodeAttack()
+    
+    [Button("🦈 FULL Attack (Real)")]
+    private void DebugFullAttack()
     {
-        if (nodeManager == null)
-        {
-            nodeManager = FindObjectOfType<NodeManager>();
-
-            if (nodeManager == null)
-            {
-                Debug.LogWarning("NodeManager is NULL");
-                return;
-            }
-        }
-
-        AttackByNode(nodeManager.currentNode);
+        Attack();
+    }
+    [Button("🦈 Test Attack A (Full)")]
+    private void DebugAttackA_Full()
+    {
+        NodeType node = GetDebugNode();
+        PlayAttackAnimationByNode(node);
+        ApplyPressureSlam();
+    }
+    [Button("🦈 Test Attack B (Full)")]
+    private void DebugAttackB_Full()
+    {
+        NodeType node = GetDebugNode();
+        PlayAttackAnimationByNode(node);
+        ApplyPowerDisruption();
+    }
+    [Button("🦈 Test Attack C (Full)")]
+    private void DebugAttackC_Full()
+    {
+        NodeType node = GetDebugNode();
+        PlayAttackAnimationByNode(node);
+        ApplyMultiLeak();
     }
 }
