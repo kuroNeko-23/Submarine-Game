@@ -12,12 +12,32 @@ public class LeakMalfunctionManager : MonoBehaviour
         HeatPipeLeak
     }
 
+    [System.Serializable]
+    public class LeakInstance
+    {
+        public LeakType type;
+        public float timer;
+        public float activationTime;
+        public bool isActive;
+
+        public LeakInstance(LeakType type, float activationTime)
+        {
+            this.type = type;
+            this.activationTime = activationTime;
+            this.timer = 0f;
+            this.isActive = false;
+        }
+    }
+
     [Header("References")]
     [SerializeField] private SystemManager systemManager;
-    
 
     [Header("State")]
-    [ReadOnly] public List<LeakType> activeLeaks = new List<LeakType>();
+    [ReadOnly] public List<LeakInstance> activeLeaks = new List<LeakInstance>();
+
+    [Header("Leak Delay System")]
+    [SerializeField] private float leakWarningMin = 4f;
+    [SerializeField] private float leakWarningMax = 7f;
 
     [Header("Leak VFX")]
     [SerializeField] private GameObject reactorLeakVFX;
@@ -46,6 +66,7 @@ public class LeakMalfunctionManager : MonoBehaviour
     // =========================
     // INIT
     // =========================
+
     void Awake()
     {
         reactorHoldToFixText.SetActive(false);
@@ -57,52 +78,57 @@ public class LeakMalfunctionManager : MonoBehaviour
     {
         ResetAllVFX();
     }
-    
 
     void Update()
     {
+        UpdateLeakStates();
         ApplyAllLeaks();
     }
 
-    private void ApplyAllLeaks()
+    // =========================
+    // CORE LOOP
+    // =========================
+
+    private void UpdateLeakStates()
     {
         foreach (var leak in activeLeaks)
         {
-            switch (leak)
+            if (leak.isActive) continue;
+
+            leak.timer += Time.deltaTime;
+
+            if (leak.timer >= leak.activationTime)
             {
-                case LeakType.ReactorLeak:
-                    ApplyReactorLeak();
-                    break;
-
-                case LeakType.PressureLeak:
-                    ApplyPressureLeak();
-                    break;
-
-                case LeakType.HeatPipeLeak:
-                    ApplyHeatPipeLeak();
-                    break;
+                leak.isActive = true;
+                Debug.Log($"🔥 {leak.type} is now ACTIVE");
             }
         }
     }
 
-    // =========================
-    // EFFECTS
-    // =========================
-
-    private void ApplyReactorLeak()
+    private void ApplyAllLeaks()
     {
-        systemManager.heat += reactorHeatRate * Time.deltaTime;
-        systemManager.power -= reactorPowerDrain * Time.deltaTime;
-    }
+        if (systemManager == null) return;
 
-    private void ApplyPressureLeak()
-    {
-        systemManager.pressure += pressureIncreaseRate * Time.deltaTime;
-    }
+        foreach (var leak in activeLeaks)
+        {
+            if (!leak.isActive) continue;
 
-    private void ApplyHeatPipeLeak()
-    {
-        systemManager.heat -= heatDropRate * Time.deltaTime;
+            switch (leak.type)
+            {
+                case LeakType.ReactorLeak:
+                    systemManager.heat += reactorHeatRate * Time.deltaTime;
+                    systemManager.power -= reactorPowerDrain * Time.deltaTime;
+                    break;
+
+                case LeakType.PressureLeak:
+                    systemManager.pressure += pressureIncreaseRate * Time.deltaTime;
+                    break;
+
+                case LeakType.HeatPipeLeak:
+                    systemManager.heat -= heatDropRate * Time.deltaTime;
+                    break;
+            }
+        }
     }
 
     // =========================
@@ -113,17 +139,27 @@ public class LeakMalfunctionManager : MonoBehaviour
     {
         if (type == LeakType.None) return;
 
-        if (!activeLeaks.Contains(type))
+        // prevent duplicate
+        foreach (var leak in activeLeaks)
         {
-            activeLeaks.Add(type);
-            EnableLeakVFX(type);
-            EnableHoldToFixText(type);
-
-            // 🔊 AUDIO (ADD THIS)
-            PlayLeakAudio(type);
-
-            Debug.Log($"⚠ {type} started");
+            if (leak.type == type)
+                return;
         }
+
+        float delay = Random.Range(leakWarningMin, leakWarningMax);
+        LeakInstance newLeak = new LeakInstance(type, delay);
+
+        activeLeaks.Add(newLeak);
+
+        EnableLeakVFX(type);
+        EnableHoldToFixText(type);
+        PlayLeakAudio(type);
+
+        Debug.Log($"⚠ {type} started (WARNING)");
+    }
+    public bool HasLeak(LeakType type)
+    {
+        return activeLeaks.Exists(l => l.type == type);
     }
 
     // =========================
@@ -132,113 +168,25 @@ public class LeakMalfunctionManager : MonoBehaviour
 
     public void ResolveLeak(LeakType type)
     {
-        if (!activeLeaks.Contains(type))
+        LeakInstance target = activeLeaks.Find(l => l.type == type);
+
+        if (target == null)
         {
             Debug.Log("Wrong leak fix!");
             return;
         }
 
-        activeLeaks.Remove(type);
+        activeLeaks.Remove(target);
+
         DisableLeakVFX(type);
         DisableHoldToFixText(type);
-        // 🔊 AUDIO (ADD THIS)
         StopLeakAudio(type);
 
         Debug.Log($"✅ {type} fixed");
     }
 
     // =========================
-    // VFX CONTROL
-    // =========================
-
-    private void EnableLeakVFX(LeakType type)
-    {
-        switch (type)
-        {
-            case LeakType.ReactorLeak:
-                reactorLeakVFX.SetActive(true);
-                break;
-
-            case LeakType.PressureLeak:
-                pressureLeakVFX.SetActive(true);
-                break;
-
-            case LeakType.HeatPipeLeak:
-                heatPipeLeakVFX.SetActive(true);
-                break;
-        }
-    }
-
-    private void DisableLeakVFX(LeakType type)
-    {
-        switch (type)
-        {
-            case LeakType.ReactorLeak:
-                reactorLeakVFX.SetActive(false);
-                break;
-
-            case LeakType.PressureLeak:
-                pressureLeakVFX.SetActive(false);
-                break;
-
-            case LeakType.HeatPipeLeak:
-                heatPipeLeakVFX.SetActive(false);
-                break;
-        }
-    }
-
-    private void ResetAllVFX()
-    {
-        reactorLeakVFX.SetActive(false);
-        pressureLeakVFX.SetActive(false);
-        heatPipeLeakVFX.SetActive(false);
-    }
-
-    // =========================
-    // AUDIO CONTROL (NEW)
-    // =========================
-
-    private void PlayLeakAudio(LeakType type)
-    {
-        if (AudioManager.Instance == null) return;
-
-        switch (type)
-        {
-            case LeakType.ReactorLeak:
-                AudioManager.Instance.PlayReactorLeak();
-                break;
-
-            case LeakType.PressureLeak:
-                AudioManager.Instance.PlayPressureLeak();
-                break;
-
-            case LeakType.HeatPipeLeak:
-                AudioManager.Instance.PlayHeatLeak();
-                break;
-        }
-    }
-
-    private void StopLeakAudio(LeakType type)
-    {
-        if (AudioManager.Instance == null) return;
-
-        switch (type)
-        {
-            case LeakType.ReactorLeak:
-                AudioManager.Instance.StopReactorLeak();
-                break;
-
-            case LeakType.PressureLeak:
-                AudioManager.Instance.StopPressureLeak();
-                break;
-
-            case LeakType.HeatPipeLeak:
-                AudioManager.Instance.StopHeatLeak();
-                break;
-        }
-    }
-    // =========================
-    // RANDOM TRIGGERS (NEW)
+    // RANDOM
     // =========================
 
     public void TriggerRandomLeak()
@@ -247,14 +195,12 @@ public class LeakMalfunctionManager : MonoBehaviour
 
         if (available.Count == 0) return;
 
-        LeakType selected = available[Random.Range(0, available.Count)];
-        TriggerLeak(selected);
+        TriggerLeak(available[Random.Range(0, available.Count)]);
     }
 
     public void TriggerMultipleLeaks(int count)
     {
         List<LeakType> available = GetAvailableLeaks();
-
         count = Mathf.Min(count, available.Count);
 
         for (int i = 0; i < count; i++)
@@ -265,26 +211,86 @@ public class LeakMalfunctionManager : MonoBehaviour
         }
     }
 
-    public void TriggerAllLeaks()
-    {
-        foreach (var leak in GetAvailableLeaks())
-        {
-            TriggerLeak(leak);
-        }
-    }
-
     private List<LeakType> GetAvailableLeaks()
     {
-        List<LeakType> list = new List<LeakType>
+        List<LeakType> all = new List<LeakType>
         {
             LeakType.ReactorLeak,
             LeakType.PressureLeak,
             LeakType.HeatPipeLeak
         };
 
-        list.RemoveAll(l => activeLeaks.Contains(l));
+        foreach (var leak in activeLeaks)
+        {
+            all.Remove(leak.type);
+        }
 
-        return list;
+        return all;
+    }
+
+    // =========================
+    // VFX
+    // =========================
+
+    private void EnableLeakVFX(LeakType type)
+    {
+        if (type == LeakType.ReactorLeak) reactorLeakVFX.SetActive(true);
+        if (type == LeakType.PressureLeak) pressureLeakVFX.SetActive(true);
+        if (type == LeakType.HeatPipeLeak) heatPipeLeakVFX.SetActive(true);
+    }
+
+    private void DisableLeakVFX(LeakType type)
+    {
+        if (type == LeakType.ReactorLeak) reactorLeakVFX.SetActive(false);
+        if (type == LeakType.PressureLeak) pressureLeakVFX.SetActive(false);
+        if (type == LeakType.HeatPipeLeak) heatPipeLeakVFX.SetActive(false);
+    }
+
+    private void ResetAllVFX()
+    {
+        reactorLeakVFX.SetActive(false);
+        pressureLeakVFX.SetActive(false);
+        heatPipeLeakVFX.SetActive(false);
+    }
+
+    // =========================
+    // AUDIO
+    // =========================
+
+    private void PlayLeakAudio(LeakType type)
+    {
+        if (AudioManager.Instance == null) return;
+
+        if (type == LeakType.ReactorLeak) AudioManager.Instance.PlayReactorLeak();
+        if (type == LeakType.PressureLeak) AudioManager.Instance.PlayPressureLeak();
+        if (type == LeakType.HeatPipeLeak) AudioManager.Instance.PlayHeatLeak();
+    }
+
+    private void StopLeakAudio(LeakType type)
+    {
+        if (AudioManager.Instance == null) return;
+
+        if (type == LeakType.ReactorLeak) AudioManager.Instance.StopReactorLeak();
+        if (type == LeakType.PressureLeak) AudioManager.Instance.StopPressureLeak();
+        if (type == LeakType.HeatPipeLeak) AudioManager.Instance.StopHeatLeak();
+    }
+
+    // =========================
+    // UI
+    // =========================
+
+    void EnableHoldToFixText(LeakType type)
+    {
+        if (type == LeakType.ReactorLeak) reactorHoldToFixText.SetActive(true);
+        if (type == LeakType.PressureLeak) pressureHoldToFixText.SetActive(true);
+        if (type == LeakType.HeatPipeLeak) heatPipeHoldToFixText.SetActive(true);
+    }
+
+    void DisableHoldToFixText(LeakType type)
+    {
+        if (type == LeakType.ReactorLeak) reactorHoldToFixText.SetActive(false);
+        if (type == LeakType.PressureLeak) pressureHoldToFixText.SetActive(false);
+        if (type == LeakType.HeatPipeLeak) heatPipeHoldToFixText.SetActive(false);
     }
 
     // =========================
@@ -300,48 +306,12 @@ public class LeakMalfunctionManager : MonoBehaviour
     [Button("Heat Pipe Leak")]
     private void DebugHeatPipe() => TriggerLeak(LeakType.HeatPipeLeak);
 
-    [Button("Clear Leak")]
+    [Button("Clear All Leaks")]
     private void DebugClear()
     {
-        foreach (var leak in new List<LeakType>(activeLeaks))
+        foreach (var leak in new List<LeakInstance>(activeLeaks))
         {
-            ResolveLeak(leak);
-        }
-    }
-
-    // =========================
-    void EnableHoldToFixText(LeakType type)
-    {
-        switch (type)
-        {
-            case LeakType.ReactorLeak:
-                reactorHoldToFixText.SetActive(true);
-                break;
-
-            case LeakType.PressureLeak:
-                pressureHoldToFixText.SetActive(true);
-                break;
-
-            case LeakType.HeatPipeLeak:
-                heatPipeHoldToFixText.SetActive(true);
-                break;
-        }
-    }
-    void DisableHoldToFixText(LeakType type)
-    {
-        switch (type)
-        {
-            case LeakType.ReactorLeak:
-                reactorHoldToFixText.SetActive(false);
-                break;
-
-            case LeakType.PressureLeak:
-                pressureHoldToFixText.SetActive(false);
-                break;
-
-            case LeakType.HeatPipeLeak:
-                heatPipeHoldToFixText.SetActive(false);
-                break;
+            ResolveLeak(leak.type);
         }
     }
 }

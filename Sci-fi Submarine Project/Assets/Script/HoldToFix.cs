@@ -99,14 +99,14 @@ public class HoldToFix : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
     }
 
     // =========================
-    // VALIDATION
+    // VALIDATION (FIXED)
     // =========================
     private bool CanFix()
     {
         // Leak fix
         if (leakManager != null && fixType != LeakMalfunctionManager.LeakType.None)
         {
-            return leakManager.activeLeaks.Contains(fixType);
+            return leakManager.HasLeak(fixType); // ✅ FIXED
         }
 
         // Electricity fix

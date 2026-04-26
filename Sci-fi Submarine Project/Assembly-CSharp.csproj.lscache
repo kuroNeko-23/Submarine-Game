@@ -67,6 +67,7 @@ Assets/
   HoldToFix.cs
   HoldToFix_Integrity.cs
   IntegrityController.cs
+  IntegrityWarningSystem.cs
   LightFlicker.cs
   MainMenuUIScript.cs
   MalfunctionManagerScript.cs
@@ -87,6 +88,8 @@ Assets/
   SystemInterferenceManager.cs
   SystemManager.cs
   SystemSliderUI.cs
+  UIAudio.cs
+  UIHoldAudioButton.cs
  TutorialInfo/Scripts/Readme.cs
 Temp/obj/Assembly-CSharp/.NETStandard,Version=v2.1.AssemblyAttributes.cs
 

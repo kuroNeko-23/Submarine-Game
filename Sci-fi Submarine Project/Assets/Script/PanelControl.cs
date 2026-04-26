@@ -4,21 +4,46 @@ public class PanelToggle : MonoBehaviour
 {
     [SerializeField] private GameObject panel;
 
-    // Call this to toggle the panel
+    // =========================
+    // TOGGLE
+    // =========================
     public void TogglePanel()
     {
-        panel.SetActive(!panel.activeSelf);
+        bool newState = !panel.activeSelf;
+        panel.SetActive(newState);
+
+        PlayClick();
     }
 
-    // Explicit open
+    // =========================
+    // OPEN
+    // =========================
     public void OpenPanel()
     {
-        panel.SetActive(true);
+        if (!panel.activeSelf)
+        {
+            panel.SetActive(true);
+            PlayClick();
+        }
     }
 
-    // Explicit close
+    // =========================
+    // CLOSE
+    // =========================
     public void ClosePanel()
     {
-        panel.SetActive(false);
+        if (panel.activeSelf)
+        {
+            panel.SetActive(false);
+            PlayClick();
+        }
+    }
+
+    // =========================
+    // AUDIO
+    // =========================
+    private void PlayClick()
+    {
+        AudioManager.Instance?.PlayMainUIClick();
     }
 }

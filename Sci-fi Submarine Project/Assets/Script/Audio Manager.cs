@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -34,13 +35,11 @@ public class AudioManager : MonoBehaviour
     [SerializeField] private AudioSource impactAudioSources;
     [SerializeField] private AudioSource sharkWooshSource;
 
-    [Header("Master Audio Groups")]
-    [SerializeField] private AudioSource[] allGameAudioSources;
-
     [Header("Fade Settings")]
     [SerializeField] private float fadeDuration = 3f;
 
-    private float[] baseVolumes;
+    private Dictionary<AudioSource, float> baseVolumeMap = new Dictionary<AudioSource, float>();
+    private Coroutine fadeRoutine;
 
     // =========================
     // INIT
@@ -58,8 +57,6 @@ public class AudioManager : MonoBehaviour
             Destroy(gameObject);
             return;
         }
-
-        RefreshAudioSources();
     }
 
     private void OnEnable()
@@ -72,37 +69,77 @@ public class AudioManager : MonoBehaviour
         SceneManager.sceneLoaded -= OnSceneLoaded;
     }
 
-    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    private void Start()
     {
-        RefreshAudioSources();
-        FadeInAllAudio(); // 🔥 AUTO FADE IN ON RESTART
-    }
+        CacheBaseVolumes();
 
-    void Start()
-    {
         if (ambientAudioSource != null)
         {
             ambientAudioSource.loop = true;
             ambientAudioSource.Play();
         }
 
-        FadeInAllAudio(); // safety fallback
+        FadeInAllAudio();
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        CacheBaseVolumes();
+        ResetAllAudio();
+        FadeInAllAudio();
     }
 
     // =========================
-    // REFRESH AUDIO SYSTEM
+    // FIX: STABLE BASE VOLUME SYSTEM
     // =========================
 
-    private void RefreshAudioSources()
+    private void CacheBaseVolumes()
     {
-        allGameAudioSources = Object.FindObjectsByType<AudioSource>(FindObjectsSortMode.None);
+        Register(ambientAudioSource);
+        Register(reactorLeak);
+        Register(heatLeak);
+        Register(pressureLeak);
+        Register(electricity);
 
-        baseVolumes = new float[allGameAudioSources.Length];
+        Register(reactorSound);
+        Register(heatSound);
+        Register(pressureSound);
+        Register(lowPowerAlarm);
+        Register(heatOverloadAlarm);
+        Register(pressureOverloadAlarm);
+        Register(systemFailureAlarm);
 
-        for (int i = 0; i < allGameAudioSources.Length; i++)
+        Register(mainPanelUIButtonClick);
+        Register(systemPanelUIButtonClick);
+        Register(errorPanelSFX);
+        Register(mainUIClickSFX);
+
+        Register(impactAudioSources);
+        Register(sharkWooshSource);
+    }
+
+    private void Register(AudioSource src)
+    {
+        if (src == null) return;
+
+        if (!baseVolumeMap.ContainsKey(src))
         {
-            if (allGameAudioSources[i] != null)
-                baseVolumes[i] = allGameAudioSources[i].volume;
+            float vol = src.volume;
+            if (vol <= 0.01f) vol = 1f;
+
+            baseVolumeMap[src] = vol;
+        }
+    }
+
+    private void ResetAllAudio()
+    {
+        foreach (var kvp in baseVolumeMap)
+        {
+            if (kvp.Key == null) continue;
+
+            kvp.Key.Stop();
+            kvp.Key.time = 0f;
+            kvp.Key.volume = kvp.Value;
         }
     }
 
@@ -154,6 +191,7 @@ public class AudioManager : MonoBehaviour
     public void PlaySystemPanelUIButton() => PlayOneShot(systemPanelUIButtonClick);
     public void PlayErrorPanelSFX() => PlayOneShot(errorPanelSFX);
     public void PlayMainUIClick() => PlayOneShot(mainUIClickSFX);
+
     // =========================
     // MONSTER AUDIO
     // =========================
@@ -179,9 +217,7 @@ public class AudioManager : MonoBehaviour
     private void Stop(AudioSource source)
     {
         if (source == null) return;
-
-        if (source.isPlaying)
-            source.Stop();
+        if (source.isPlaying) source.Stop();
     }
 
     private void PlayOneShot(AudioSource source)
@@ -191,54 +227,45 @@ public class AudioManager : MonoBehaviour
     }
 
     // =========================
-    // FADE SYSTEM
+    // FADE SYSTEM (FIXED)
     // =========================
 
-    public void FadeOutAllAudio()
-    {
-        StopAllCoroutines();
-        StartCoroutine(FadeAll(1f, 0f));
-    }
+    public void FadeOutAllAudio() => StartFade(1f, 0f);
+    public void FadeInAllAudio() => StartFade(0f, 1f);
 
-    public void FadeInAllAudio()
+    private void StartFade(float start, float end)
     {
-        StopAllCoroutines();
-        StartCoroutine(FadeAll(0f, 1f));
+        if (fadeRoutine != null)
+            StopCoroutine(fadeRoutine);
+
+        fadeRoutine = StartCoroutine(FadeAll(start, end));
     }
 
     private IEnumerator FadeAll(float start, float end)
     {
         float t = 0f;
 
-        if (baseVolumes == null || baseVolumes.Length != allGameAudioSources.Length)
-            RefreshAudioSources();
-
         while (t < fadeDuration)
         {
             t += Time.unscaledDeltaTime;
             float lerp = t / fadeDuration;
 
-            for (int i = 0; i < allGameAudioSources.Length; i++)
+            foreach (var kvp in baseVolumeMap)
             {
-                if (allGameAudioSources[i] == null) continue;
+                if (kvp.Key == null) continue;
 
-                float baseVol = baseVolumes[i];
-
-                allGameAudioSources[i].volume = Mathf.Lerp(
-                    baseVol * start,
-                    baseVol * end,
-                    lerp
-                );
+                float baseVol = kvp.Value;
+                kvp.Key.volume = Mathf.Lerp(baseVol * start, baseVol * end, lerp);
             }
 
             yield return null;
         }
 
-        for (int i = 0; i < allGameAudioSources.Length; i++)
+        foreach (var kvp in baseVolumeMap)
         {
-            if (allGameAudioSources[i] == null) continue;
+            if (kvp.Key == null) continue;
 
-            allGameAudioSources[i].volume = baseVolumes[i] * end;
+            kvp.Key.volume = kvp.Value * end;
         }
     }
 }

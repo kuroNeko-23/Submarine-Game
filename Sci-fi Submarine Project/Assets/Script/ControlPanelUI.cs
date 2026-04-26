@@ -19,7 +19,6 @@ public class SystemIntegrityPanelUI : MonoBehaviour
     [SerializeField] private Slider pressureSlider;
     [SerializeField] private Slider integritySlider;
 
-    // 🔴 NEW: Fill Images
     [Header("Slider Fill Images")]
     [SerializeField] private Image powerFill;
     [SerializeField] private Image heatFill;
@@ -35,7 +34,7 @@ public class SystemIntegrityPanelUI : MonoBehaviour
     private Color integrityDefaultColor;
 
     // =========================
-    // STATUS TEXT (MALFUNCTION)
+    // STATUS TEXT
     // =========================
 
     [Header("Status Text UI")]
@@ -60,7 +59,7 @@ public class SystemIntegrityPanelUI : MonoBehaviour
     [SerializeField] private BinaryStatus pressurePipeConfig;
 
     // =========================
-    // WARNING VFX (CORE SYSTEM)
+    // WARNING VFX
     // =========================
 
     [Header("⚠ System Warning Images || Core System")]
@@ -81,10 +80,6 @@ public class SystemIntegrityPanelUI : MonoBehaviour
     [SerializeField] private bool useSmoothing = true;
     [SerializeField] private float smoothSpeed = 5f;
 
-    // =========================
-    // UNITY
-    // =========================
-
     void Start()
     {
         InitSlider(powerSlider);
@@ -92,7 +87,7 @@ public class SystemIntegrityPanelUI : MonoBehaviour
         InitSlider(pressureSlider);
         InitSlider(integritySlider);
 
-        CacheDefaultColors(); // 🔴 NEW
+        CacheDefaultColors();
     }
 
     void Update()
@@ -103,11 +98,11 @@ public class SystemIntegrityPanelUI : MonoBehaviour
         UpdateSliders();
         UpdateStatuses();
         UpdateWarnings();
-        UpdateCriticalColors(); // 🔴 NEW
+        UpdateCriticalColors();
     }
 
     // =========================
-    // SLIDER LOGIC
+    // SLIDERS
     // =========================
 
     private void UpdateSliders()
@@ -132,11 +127,7 @@ public class SystemIntegrityPanelUI : MonoBehaviour
 
         if (useSmoothing)
         {
-            slider.value = Mathf.Lerp(
-                slider.value,
-                targetValue,
-                Time.deltaTime * smoothSpeed
-            );
+            slider.value = Mathf.Lerp(slider.value, targetValue, Time.deltaTime * smoothSpeed);
         }
         else
         {
@@ -145,7 +136,7 @@ public class SystemIntegrityPanelUI : MonoBehaviour
     }
 
     // =========================
-    // STATUS LOGIC
+    // STATUS (FIXED)
     // =========================
 
     private void UpdateStatuses()
@@ -183,7 +174,7 @@ public class SystemIntegrityPanelUI : MonoBehaviour
     {
         if (reactorStatus == null || leakManager == null) return;
 
-        bool isBroken = leakManager.activeLeaks.Contains(LeakMalfunctionManager.LeakType.ReactorLeak);
+        bool isBroken = leakManager.HasLeak(LeakMalfunctionManager.LeakType.ReactorLeak); // ✅ FIXED
 
         reactorStatus.text = isBroken
             ? reactorConfig.errorText
@@ -194,7 +185,7 @@ public class SystemIntegrityPanelUI : MonoBehaviour
     {
         if (heatPipeStatus == null || leakManager == null) return;
 
-        bool isBroken = leakManager.activeLeaks.Contains(LeakMalfunctionManager.LeakType.HeatPipeLeak);
+        bool isBroken = leakManager.HasLeak(LeakMalfunctionManager.LeakType.HeatPipeLeak); // ✅ FIXED
 
         heatPipeStatus.text = isBroken
             ? heatPipeConfig.errorText
@@ -205,7 +196,7 @@ public class SystemIntegrityPanelUI : MonoBehaviour
     {
         if (pressurePipeStatus == null || leakManager == null) return;
 
-        bool isBroken = leakManager.activeLeaks.Contains(LeakMalfunctionManager.LeakType.PressureLeak);
+        bool isBroken = leakManager.HasLeak(LeakMalfunctionManager.LeakType.PressureLeak); // ✅ FIXED
 
         pressurePipeStatus.text = isBroken
             ? pressurePipeConfig.errorText
@@ -213,7 +204,7 @@ public class SystemIntegrityPanelUI : MonoBehaviour
     }
 
     // =========================
-    // WARNING LOGIC
+    // WARNING
     // =========================
 
     private void UpdateWarnings()
@@ -227,7 +218,6 @@ public class SystemIntegrityPanelUI : MonoBehaviour
     private void HandlePowerWarning()
     {
         bool warning = systemManager.power <= 20f;
-
         if (warning) Flicker(PowerWarning);
         else SetInvisible(PowerWarning);
     }
@@ -260,7 +250,7 @@ public class SystemIntegrityPanelUI : MonoBehaviour
     }
 
     // =========================
-    // 🔴 CRITICAL COLOR LOGIC
+    // CRITICAL COLORS
     // =========================
 
     private void CacheDefaultColors()
@@ -275,14 +265,12 @@ public class SystemIntegrityPanelUI : MonoBehaviour
     {
         if (systemManager == null) return;
 
-        // Power
         if (powerFill != null)
         {
             bool critical = systemManager.power <= 10f;
             powerFill.color = critical ? criticalColor : powerDefaultColor;
         }
 
-        // Heat
         if (heatFill != null)
         {
             bool critical =
@@ -292,14 +280,12 @@ public class SystemIntegrityPanelUI : MonoBehaviour
             heatFill.color = critical ? criticalColor : heatDefaultColor;
         }
 
-        // Pressure
         if (pressureFill != null)
         {
             bool critical = systemManager.pressure >= 100f;
             pressureFill.color = critical ? criticalColor : pressureDefaultColor;
         }
 
-        // Integrity
         if (integrityFill != null)
         {
             bool critical = systemManager.integrity <= 20f;
@@ -308,7 +294,7 @@ public class SystemIntegrityPanelUI : MonoBehaviour
     }
 
     // =========================
-    // FLICKER SYSTEM
+    // FLICKER
     // =========================
 
     private void Flicker(Image img)
