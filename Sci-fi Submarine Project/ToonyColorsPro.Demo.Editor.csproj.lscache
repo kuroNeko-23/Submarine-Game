@@ -50,7 +50,7 @@ TemporaryDependencyNodeTargetIdentifier=netstandard2.1
 /warnaserror+:NU1605
 
 [sourceFiles]
-Assets/JMO Assets/Cartoon FX Remaster/Demo Assets/Kino Bloom/Editor/
+Assets/Script/Demo Assets/Kino Bloom/Editor/
  BloomEditor.cs
  BloomGraphDrawer.cs
 Temp/obj/ToonyColorsPro.Demo.Editor/.NETStandard,Version=v2.1.AssemblyAttributes.cs

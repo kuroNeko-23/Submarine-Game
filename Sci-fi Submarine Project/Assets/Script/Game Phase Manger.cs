@@ -306,7 +306,9 @@ public class GamePhaseManager : MonoBehaviour
             for (int i = 0; i < passCount; i++)
             {
                 yield return new WaitForSeconds(Random.Range(5f, 12f));
-                ApplyWindowPass(nodeManager.currentNode);
+
+                NodeType node = GetCurrentNode();
+                ApplyWindowPass(node);
             }
 
             sharkManager?.SpawnCloseRight();
@@ -319,16 +321,20 @@ public class GamePhaseManager : MonoBehaviour
 
             yield return new WaitForSeconds(10f);
 
-            sharkManager?.Attack();
-            yield return new WaitForSeconds(3f);
-
-            sharkManager?.Despawn();
+            Debug.Log("🦈 ATTACK (NODE AUTO)");
+            sharkManager.Attack();
 
             TriggerDangerMalfunction();
         }
 
         ForceEndGameWin();
         GameStateManager.Instance?.TriggerDemoComplete();
+    }
+    private NodeType GetCurrentNode()
+    {
+        return nodeManager != null
+            ? nodeManager.currentNode
+            : NodeType.ControlPanel;
     }
 
     void TriggerDangerMalfunction()
@@ -371,4 +377,46 @@ public class GamePhaseManager : MonoBehaviour
         sharkManager?.Despawn();
         Debug.Log("🏁 Game Complete - Win State");
     }
+    // =========================================================
+// 🧪 DEBUG / FORCE PHASE CONTROL
+// =========================================================
+
+[Button("🧪 Force Calm")]
+private void ForceCalm()
+{
+    StopAllCoroutines();
+    currentPhase = GamePhase.Calm;
+    StartCoroutine(CalmRoutine());
+}
+
+[Button("👀 Force Suspicion")]
+private void ForceSuspicion()
+{
+    StopAllCoroutines();
+    currentPhase = GamePhase.Suspicion;
+    StartCoroutine(SuspicionRoutine());
+}
+
+[Button("😰 Force Tension")]
+private void ForceTension()
+{
+    StopAllCoroutines();
+    currentPhase = GamePhase.Tension;
+    StartCoroutine(TensionRoutine());
+}
+
+[Button("😨 Force Danger")]
+private void ForceDanger()
+{
+    StopAllCoroutines();
+    currentPhase = GamePhase.Danger;
+    StartCoroutine(DangerRoutine());
+}
+
+[Button("🛑 Stop All Phases")]
+private void StopAllPhases()
+{
+    StopAllCoroutines();
+    Debug.Log("🛑 All phase coroutines stopped");
+}
 }

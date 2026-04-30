@@ -195,18 +195,25 @@ public class MegalodonManager : MonoBehaviour
     // =========================
     // ATTACK
     // =========================
-
-    public void Attack()
+    
+    public void Attack(NodeType node)
     {
         Spawn();
 
         StartCoroutine(PreAttackRadar(() =>
         {
-            NodeType node = nodeManager != null ? nodeManager.currentNode : NodeType.ControlPanel;
-
             ExecuteAttack(node);
         }));
-}
+    }
+
+    public void Attack()
+    {
+        NodeType node = nodeManager != null
+            ? nodeManager.currentNode
+            : NodeType.ControlPanel;
+
+        Attack(node);
+    }
     void ExecuteAttack(NodeType node)
     {
         int roll = Random.Range(0, 3);

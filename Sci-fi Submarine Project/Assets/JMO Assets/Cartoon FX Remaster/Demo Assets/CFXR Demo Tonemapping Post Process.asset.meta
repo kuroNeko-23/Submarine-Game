@@ -1,16 +1,8 @@
 fileFormatVersion: 2
-guid: 3786878ac55c85c48a462de5504f6eac
+guid: cc049df2b4592394c89ef0b54149bd25
 NativeFormatImporter:
   externalObjects: {}
-  mainObjectFileID: 11400000
+  mainObjectFileID: 0
   userData: 
   assetBundleName: 
   assetBundleVariant: 
-AssetOrigin:
-  serializedVersion: 1
-  productId: 109565
-  packageName: Cartoon FX Remaster Free
-  packageVersion: R 1.5.0
-  assetPath: Assets/JMO Assets/Cartoon FX Remaster/Demo Assets/CFXR Demo Tonemapping
-    Post Process.asset
-  uploadId: 836238

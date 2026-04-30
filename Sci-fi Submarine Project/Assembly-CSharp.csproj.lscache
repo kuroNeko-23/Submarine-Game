@@ -62,6 +62,7 @@ Assets/
   DepthSystem.cs
   DistanceFade.cs
   Game Phase Manger.cs
+  GamePhaseDebug.cs
   GameStateManager.cs
   GameTimer.cs
   HoldToFix.cs

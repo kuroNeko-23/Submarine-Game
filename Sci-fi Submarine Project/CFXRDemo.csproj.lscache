@@ -50,7 +50,7 @@ TemporaryDependencyNodeTargetIdentifier=netstandard2.1
 /warnaserror+:NU1605
 
 [sourceFiles]
-Assets/JMO Assets/Cartoon FX Remaster/Demo Assets/
+Assets/Script/Demo Assets/
  CFXR_Demo.cs
  CFXR_Demo_Rotate.cs
  CFXR_Demo_Translate.cs
